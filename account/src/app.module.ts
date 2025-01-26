@@ -13,6 +13,7 @@ import ormConfig from './ormconfig';
     UsersModule,
     ConfigModule.forRoot({
       isGlobal: true,
+      envFilePath: '.env',
     }),
     TypeOrmModule.forRoot(ormConfig),
   ],

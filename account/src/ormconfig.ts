@@ -1,4 +1,7 @@
 import { TypeOrmModuleOptions } from '@nestjs/typeorm';
+import * as dotenv from 'dotenv';
+
+dotenv.config();
 
 export default {
   type: 'mysql',
@@ -9,6 +12,8 @@ export default {
   database: process.env.DB_NAME,
   entities: [`${__dirname}/../**/*.entity.{js,ts}`],
   synchronize: false,
-  migrations: ['dist/migrations/*.js'],
-  migrationsTableName: 'migrations',
+  migrations: ['src/migations/*.ts', 'dist/migrations/*.js'],
+  cli: {
+    migrationsDir: 'src/migrations',
+  },
 } as TypeOrmModuleOptions;
