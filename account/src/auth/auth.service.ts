@@ -16,6 +16,23 @@ export class AuthService {
     private jwtService: JwtService,
   ) {}
 
+  async profile(auth: string) {
+    const payload = this.jwtService.verify(auth, {
+      secret: process.env.JWT_SECRET,
+    });
+
+    const user = await this.usersService.findOne(payload.id);
+    if (!user) {
+      throw new NotFoundException({ status: 404, message: 'User not found' });
+    }
+    const { password, ...result } = user;
+
+    return {
+      jwt: auth,
+      user: result,
+    };
+  }
+
   async login(loginDto: LoginDto) {
     const { email, password } = loginDto;
     const user = await this.usersService.findOneByEmail(email);
