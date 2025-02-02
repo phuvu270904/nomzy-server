@@ -41,8 +41,13 @@ export class AuthController {
 
   @UseGuards(AuthGuard)
   @Post('refresh')
-  async refresh() {
-    return 'refresh';
+  async refreshToken(
+    @Headers('authorization') auth: string,
+    @Body('refreshToken') refreshToken: string,
+  ) {
+    const split = auth.split(' ');
+    const token = split[1];
+    return this.authService.refresh(token, refreshToken);
   }
 
   @Post('forgot-password')

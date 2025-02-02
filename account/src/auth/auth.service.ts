@@ -61,6 +61,8 @@ export class AuthService {
       expiresIn: '7d',
     });
 
+    await this.usersService.update(user.id, { refresh_token: refreshToken });
+
     return {
       status: 200,
       message: 'Login successful',
@@ -77,8 +79,66 @@ export class AuthService {
     return 'logout';
   }
 
-  async refresh() {
-    return 'refresh';
+  async refresh(token: string, refreshToken: string) {
+    try {
+      if (!token) {
+        throw new UnauthorizedException('Cannot find access token.');
+      }
+
+      if (!refreshToken) {
+        throw new UnauthorizedException('Cannot find refresh token.');
+      }
+
+      const decoded = await this.jwtService.verifyAsync(token, {
+        secret: process.env.JWT_SECRET,
+        ignoreExpiration: true,
+      });
+
+      const decodedRefreshToken = await this.jwtService.verifyAsync(
+        refreshToken,
+        {
+          secret: process.env.REFRESH_TOKEN_SECRET,
+        },
+      );
+
+      if (!decoded) {
+        throw new UnauthorizedException('Access token is invalid.');
+      }
+
+      if (!decodedRefreshToken) {
+        throw new UnauthorizedException('Refresh token is invalid.');
+      }
+
+      const user = await this.usersService.findOne(decoded.id);
+      if (!user) {
+        throw new NotFoundException('User not found');
+      }
+
+      if (refreshToken !== user.refresh_token) {
+        throw new UnauthorizedException('Invalid refresh token');
+      }
+
+      const dataForAccessToken = {
+        id: user.id,
+        email: user.email,
+        role: user.role,
+      };
+
+      const newAccessToken = this.jwtService.sign(dataForAccessToken, {
+        secret: process.env.JWT_SECRET,
+        expiresIn: '30s',
+      });
+
+      if (!newAccessToken) {
+        throw new UnauthorizedException('Error creating access token');
+      }
+
+      return {
+        jwt: newAccessToken,
+      };
+    } catch (error) {
+      throw new UnauthorizedException(error.message || 'Token refresh failed');
+    }
   }
 
   async forgotPassword() {
