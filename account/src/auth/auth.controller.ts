@@ -33,11 +33,13 @@ export class AuthController {
     return this.authService.register(CreateUserDto);
   }
 
+  @UseGuards(AuthGuard)
   @Post('logout')
   async logout() {
     return 'logout';
   }
 
+  @UseGuards(AuthGuard)
   @Post('refresh')
   async refresh() {
     return 'refresh';
@@ -53,6 +55,7 @@ export class AuthController {
     return 'verify-email';
   }
 
+  @UseGuards(AuthGuard)
   @Post('change-password')
   async changePassword() {
     return 'change-password';
