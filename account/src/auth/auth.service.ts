@@ -75,8 +75,35 @@ export class AuthService {
     return this.usersService.create(user);
   }
 
-  async logout() {
-    return 'logout';
+  async logout(token: string) {
+    try {
+      if (!token) {
+        throw new UnauthorizedException('Cannot find access token.');
+      }
+
+      const decoded = await this.jwtService.verifyAsync(token, {
+        secret: process.env.JWT_SECRET,
+        ignoreExpiration: true,
+      });
+
+      if (!decoded) {
+        throw new UnauthorizedException('Access token is invalid.');
+      }
+
+      const user = await this.usersService.findOne(decoded.id);
+      if (!user) {
+        throw new NotFoundException('User not found');
+      }
+
+      await this.usersService.update(user.id, { refresh_token: undefined });
+
+      return {
+        status: 200,
+        message: 'Logout successful',
+      };
+    } catch (error) {
+      throw new UnauthorizedException(error.message || 'Logout failed');
+    }
   }
 
   async refresh(token: string, refreshToken: string) {

@@ -28,8 +28,10 @@ export class AuthController {
   }
 
   @Post('logout')
-  async logout() {
-    return 'logout';
+  async logout(@Headers('authorization') auth: string) {
+    const split = auth.split(' ');
+    const token = split[1];
+    return this.authService.logout(token);
   }
 
   @Post('refresh')
