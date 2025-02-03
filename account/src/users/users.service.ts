@@ -40,7 +40,7 @@ export class UsersService {
     return this.userRepository.save(newUser);
   }
 
-  async update(id: number, user: UpdateUserDto): Promise<UserEntity | null> {
+  async update(id: number, user: UpdateUserDto): Promise<UpdateUserDto | null> {
     await this.userRepository.update(id, user);
     return this.userRepository.findOne({ where: { id } });
   }
