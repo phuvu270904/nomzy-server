@@ -3,6 +3,7 @@ import { AuthService } from './auth.service';
 import { CreateUserDto } from 'src/users/dto/createUser.dto';
 import { LoginDto } from './dto/login.dto';
 import { Public } from 'src/common/decorators/public.decorator';
+import { ChangePasswordDto } from './dto/changePassword.dto';
 
 @Controller('auth')
 export class AuthController {
@@ -45,19 +46,24 @@ export class AuthController {
   }
 
   @Public()
-  @Post('forgot-password')
+  @Post('forgotPassword')
   async forgotPassword() {
     return 'forgot-password';
   }
 
   @Public()
-  @Post('verify-email')
+  @Post('verifyEmail')
   async verifyEmail() {
     return 'verify-email';
   }
 
-  @Post('change-password')
-  async changePassword() {
-    return 'change-password';
+  @Post('changePassword')
+  async changePassword(
+    @Headers('authorization') auth: string,
+    @Body() changePasswordDto: ChangePasswordDto,
+  ) {
+    const split = auth.split(' ');
+    const token = split[1];
+    return this.authService.changePassword(token, changePasswordDto);
   }
 }

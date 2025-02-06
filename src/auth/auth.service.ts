@@ -8,6 +8,7 @@ import { UsersService } from 'src/users/users.service';
 import { LoginDto } from './dto/login.dto';
 import * as bcrypt from 'bcrypt';
 import { JwtService } from '@nestjs/jwt';
+import { ChangePasswordDto } from './dto/changePassword.dto';
 
 @Injectable()
 export class AuthService {
@@ -176,7 +177,46 @@ export class AuthService {
     return 'verify-email';
   }
 
-  async changePassword() {
-    return 'change-password';
+  async changePassword(token: string, changePasswordDto: ChangePasswordDto) {
+    try {
+      if (!token) {
+        throw new UnauthorizedException('Cannot find access token.');
+      }
+
+      const decoded = await this.jwtService.verifyAsync(token, {
+        secret: process.env.JWT_SECRET,
+        ignoreExpiration: true,
+      });
+
+      if (!decoded) {
+        throw new UnauthorizedException('Access token is invalid.');
+      }
+
+      const user = await this.usersService.findOne(decoded.id);
+      if (!user) {
+        throw new NotFoundException('User not found');
+      }
+
+      const isMatch = await bcrypt.compare(
+        changePasswordDto.oldPassword,
+        user.password,
+      );
+      if (!isMatch) {
+        throw new UnauthorizedException('Incorrect old password');
+      }
+
+      const newPassword = await bcrypt.hash(changePasswordDto.newPassword, 10);
+
+      await this.usersService.update(user.id, { password: newPassword });
+
+      return {
+        status: 200,
+        message: 'Password changed successfully',
+      };
+    } catch (error) {
+      throw new UnauthorizedException(
+        error.message || 'Password change failed',
+      );
+    }
   }
 }
