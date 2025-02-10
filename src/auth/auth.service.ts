@@ -9,12 +9,15 @@ import { LoginDto } from './dto/login.dto';
 import * as bcrypt from 'bcrypt';
 import { JwtService } from '@nestjs/jwt';
 import { ChangePasswordDto } from './dto/changePassword.dto';
+import { UpdateUserDto } from 'src/users/dto/updateUser.dto';
+import { Helper } from 'src/helper/helper';
 
 @Injectable()
 export class AuthService {
   constructor(
     private readonly usersService: UsersService,
     private jwtService: JwtService,
+    private readonly helper: Helper,
   ) {}
 
   async profile(auth: string) {
@@ -109,18 +112,10 @@ export class AuthService {
 
   async refresh(token: string, refreshToken: string) {
     try {
-      if (!token) {
-        throw new UnauthorizedException('Cannot find access token.');
-      }
-
+      const user = await this.helper.validateUserFromToken(token);
       if (!refreshToken) {
         throw new UnauthorizedException('Cannot find refresh token.');
       }
-
-      const decoded = await this.jwtService.verifyAsync(token, {
-        secret: process.env.JWT_SECRET,
-        ignoreExpiration: true,
-      });
 
       const decodedRefreshToken = await this.jwtService.verifyAsync(
         refreshToken,
@@ -129,17 +124,8 @@ export class AuthService {
         },
       );
 
-      if (!decoded) {
-        throw new UnauthorizedException('Access token is invalid.');
-      }
-
       if (!decodedRefreshToken) {
         throw new UnauthorizedException('Refresh token is invalid.');
-      }
-
-      const user = await this.usersService.findOne(decoded.id);
-      if (!user) {
-        throw new NotFoundException('User not found');
       }
 
       if (refreshToken !== user.refresh_token) {
@@ -179,23 +165,7 @@ export class AuthService {
 
   async changePassword(token: string, changePasswordDto: ChangePasswordDto) {
     try {
-      if (!token) {
-        throw new UnauthorizedException('Cannot find access token.');
-      }
-
-      const decoded = await this.jwtService.verifyAsync(token, {
-        secret: process.env.JWT_SECRET,
-        ignoreExpiration: true,
-      });
-
-      if (!decoded) {
-        throw new UnauthorizedException('Access token is invalid.');
-      }
-
-      const user = await this.usersService.findOne(decoded.id);
-      if (!user) {
-        throw new NotFoundException('User not found');
-      }
+      const user = await this.helper.validateUserFromToken(token);
 
       const isMatch = await bcrypt.compare(
         changePasswordDto.oldPassword,
@@ -217,6 +187,21 @@ export class AuthService {
       throw new UnauthorizedException(
         error.message || 'Password change failed',
       );
+    }
+  }
+
+  async updateProfile(token: string, updateUserDto: UpdateUserDto) {
+    try {
+      const user = await this.helper.validateUserFromToken(token);
+
+      await this.usersService.update(user.id, updateUserDto);
+
+      return {
+        status: 200,
+        message: 'Profile updated successfully',
+      };
+    } catch (error) {
+      throw new UnauthorizedException(error.message || 'Profile update failed');
     }
   }
 }

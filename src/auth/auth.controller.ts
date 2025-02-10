@@ -4,6 +4,7 @@ import { CreateUserDto } from 'src/users/dto/createUser.dto';
 import { LoginDto } from './dto/login.dto';
 import { Public } from 'src/common/decorators/public.decorator';
 import { ChangePasswordDto } from './dto/changePassword.dto';
+import { UpdateUserDto } from 'src/users/dto/updateUser.dto';
 
 @Controller('auth')
 export class AuthController {
@@ -65,5 +66,15 @@ export class AuthController {
     const split = auth.split(' ');
     const token = split[1];
     return this.authService.changePassword(token, changePasswordDto);
+  }
+
+  @Post('updateProfile')
+  async updateProfile(
+    @Headers('authorization') auth: string,
+    @Body() UpdateUserDto: UpdateUserDto,
+  ) {
+    const split = auth.split(' ');
+    const token = split[1];
+    return this.authService.updateProfile(token, UpdateUserDto);
   }
 }
