@@ -1,5 +1,6 @@
 import { Prop, Schema, SchemaFactory } from '@nestjs/mongoose';
 import { Document, Types } from 'mongoose';
+import { Product } from 'src/product/schema/product.schema';
 
 export type OrderDocument = Order & Document;
 
@@ -8,15 +9,11 @@ export class Order {
   @Prop({ required: true, type: Types.ObjectId, ref: 'Restaurant' })
   restaurant: Types.ObjectId;
 
-  @Prop({ required: true, type: Number }) // User ID from SQL
+  @Prop({ required: true, type: Number })
   createdBy: number;
 
-  @Prop({ required: true })
-  items: {
-    product: Types.ObjectId;
-    quantity: number;
-    price: number;
-  }[];
+  @Prop({ required: true, type: Types.ObjectId, ref: 'Product' })
+  items: Product[];
 
   @Prop({ required: true })
   totalAmount: number;

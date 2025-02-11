@@ -8,6 +8,8 @@ import { TypeOrmModule } from '@nestjs/typeorm';
 import ormConfig from './ormconfig';
 import { MongooseModule } from '@nestjs/mongoose';
 import { OrderModule } from './order/order.module';
+import { RestaurantModule } from './restaurant/restaurant.module';
+import { ProductModule } from './product/product.module';
 
 @Module({
   imports: [
@@ -20,6 +22,8 @@ import { OrderModule } from './order/order.module';
     TypeOrmModule.forRoot(ormConfig),
     MongooseModule.forRoot(process.env.MONGO_URI!),
     OrderModule,
+    RestaurantModule,
+    ProductModule,
   ],
   controllers: [AppController],
   providers: [AppService],
