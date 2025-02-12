@@ -8,23 +8,25 @@ export class RestaurantService {
   constructor(
     @InjectModel(Restaurant.name) private restaurantModel: Model<Restaurant>,
   ) {}
-  async getRestaurants() {
-    // Logic to get all restaurants
+  async getRestaurants(): Promise<Restaurant[]> {
+    return this.restaurantModel.find().exec();
   }
 
-  async getRestaurant() {
-    // Logic to get a restaurant
+  async getRestaurant(_id: string): Promise<any> {
+    return this.restaurantModel.findOne({ _id }).exec();
   }
 
-  async createRestaurant() {
-    // Logic to create a restaurant
+  async createRestaurant(body: any): Promise<Restaurant> {
+    return this.restaurantModel.create(body);
   }
 
-  async updateRestaurant() {
-    // Logic to update a restaurant
+  async updateRestaurant(_id: string, body: any): Promise<any> {
+    return this.restaurantModel
+      .findOneAndUpdate({ _id }, body, { new: true })
+      .exec();
   }
 
-  async deleteRestaurant() {
-    // Logic to delete a restaurant
+  async deleteRestaurant(_id: string): Promise<any> {
+    return this.restaurantModel.findOneAndDelete({ _id }).exec();
   }
 }

@@ -1,5 +1,5 @@
 import { Prop, Schema, SchemaFactory } from '@nestjs/mongoose';
-import { IsOptional, IsString } from 'class-validator';
+import { IsNumber, IsOptional, IsString } from 'class-validator';
 import { Document, Types } from 'mongoose';
 import { Product } from 'src/product/schema/product.schema';
 
@@ -22,6 +22,10 @@ export class Restaurant {
   @Prop({ type: [{ type: Types.ObjectId, ref: 'Product' }] })
   @IsOptional()
   products?: Product[];
+
+  @Prop({ required: true })
+  @IsNumber()
+  owner: number;
 }
 
 export const RestaurantSchema = SchemaFactory.createForClass(Restaurant);

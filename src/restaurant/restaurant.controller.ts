@@ -1,4 +1,12 @@
-import { Controller, Delete, Get, Post, Put } from '@nestjs/common';
+import {
+  Body,
+  Controller,
+  Delete,
+  Get,
+  Param,
+  Post,
+  Put,
+} from '@nestjs/common';
 import { RestaurantService } from './restaurant.service';
 
 @Controller('restaurant')
@@ -11,22 +19,22 @@ export class RestaurantController {
   }
 
   @Get(':id')
-  async getRestaurant() {
-    return this.restaurantService.getRestaurant();
+  async getRestaurant(@Param('id') _id: string) {
+    return this.restaurantService.getRestaurant(_id);
   }
 
   @Post()
-  async createRestaurant() {
-    return this.restaurantService.createRestaurant();
+  async createRestaurant(@Body() body: any) {
+    return this.restaurantService.createRestaurant(body);
   }
 
   @Put(':id')
-  async updateRestaurant() {
-    return this.restaurantService.updateRestaurant();
+  async updateRestaurant(@Param('id') _id: string, @Body() body: any) {
+    return this.restaurantService.updateRestaurant(_id, body);
   }
 
   @Delete(':id')
-  async deleteRestaurant() {
-    return this.restaurantService.deleteRestaurant();
+  async deleteRestaurant(@Param('id') _id: string) {
+    return this.restaurantService.deleteRestaurant(_id);
   }
 }
