@@ -1,7 +1,7 @@
 import { Injectable } from '@nestjs/common';
 import { InjectModel } from '@nestjs/mongoose';
 import { Restaurant } from './schema/restaurant.schema';
-import { Model } from 'mongoose';
+import { Model, Types } from 'mongoose';
 
 @Injectable()
 export class RestaurantService {
@@ -17,10 +17,20 @@ export class RestaurantService {
   }
 
   async createRestaurant(body: any): Promise<Restaurant> {
+    if (body.products) {
+      body.products = body.products.map(
+        (product: any) => new Types.ObjectId(String(product)),
+      );
+    }
     return this.restaurantModel.create(body);
   }
 
   async updateRestaurant(_id: string, body: any): Promise<any> {
+    if (body.products) {
+      body.products = body.products.map(
+        (product: any) => new Types.ObjectId(String(product)),
+      );
+    }
     return this.restaurantModel
       .findOneAndUpdate({ _id }, body, { new: true })
       .exec();
