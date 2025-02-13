@@ -1,26 +1,45 @@
 import { Injectable } from '@nestjs/common';
-import { CreateOrderDto } from './dto/create-order.dto';
-import { UpdateOrderDto } from './dto/update-order.dto';
+import { InjectModel } from '@nestjs/mongoose';
+import { Order } from './schema/order.schema';
+import { Model, Types } from 'mongoose';
 
 @Injectable()
 export class OrderService {
-  create(createOrderDto: CreateOrderDto) {
-    return 'This action adds a new order';
+  constructor(
+    @InjectModel(Order.name) private readonly orderModel: Model<Order>,
+  ) {}
+
+  createOrder(body: any) {
+    if (body.restaurantId && body.items) {
+      body.restaurantId = new Types.ObjectId(String(body.restaurantId));
+      body.items = body.items.map(
+        (item: any) => new Types.ObjectId(String(item)),
+      );
+    }
+    return this.orderModel.create(body);
   }
 
-  findAll() {
-    return `This action returns all order`;
+  findOrders() {
+    return this.orderModel.find().exec();
   }
 
-  findOne(id: number) {
-    return `This action returns a #${id} order`;
+  findOrder(_id: string) {
+    return this.orderModel.findOne({ _id }).exec();
   }
 
-  update(id: number, updateOrderDto: UpdateOrderDto) {
-    return `This action updates a #${id} order`;
+  updateOrder(_id: string, body: any) {
+    if (body.restaurantId && body.items) {
+      body.restaurantId = new Types.ObjectId(String(body.restaurantId));
+      body.items = body.items.map(
+        (item: any) => new Types.ObjectId(String(item)),
+      );
+    }
+    return this.orderModel
+      .findOneAndUpdate({ _id }, body, { new: true })
+      .exec();
   }
 
-  remove(id: number) {
-    return `This action removes a #${id} order`;
+  deleteOrder(_id: string) {
+    return this.orderModel.findOneAndDelete({ _id }).exec();
   }
 }

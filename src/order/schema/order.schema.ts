@@ -1,13 +1,14 @@
 import { Prop, Schema, SchemaFactory } from '@nestjs/mongoose';
 import { Document, Types } from 'mongoose';
 import { Product } from 'src/product/schema/product.schema';
+import { Restaurant } from 'src/restaurant/schema/restaurant.schema';
 
 export type OrderDocument = Order & Document;
 
 @Schema({ timestamps: true })
 export class Order {
   @Prop({ required: true, type: Types.ObjectId, ref: 'Restaurant' })
-  restaurant: Types.ObjectId;
+  restaurantId: Restaurant;
 
   @Prop({ required: true, type: Number })
   createdBy: number;
@@ -16,7 +17,7 @@ export class Order {
   items: Product[];
 
   @Prop({ required: true })
-  totalAmount: number;
+  total: number;
 
   @Prop({
     type: String,
