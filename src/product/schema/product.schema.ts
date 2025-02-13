@@ -16,7 +16,7 @@ export class Product {
   price: number;
 
   @Prop({ required: true, type: Types.ObjectId, ref: 'Restaurant' })
-  restaurant: Restaurant;
+  restaurantId: Types.ObjectId;
 }
 
 export const ProductSchema = SchemaFactory.createForClass(Product);
