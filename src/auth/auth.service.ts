@@ -11,6 +11,8 @@ import { JwtService } from '@nestjs/jwt';
 import { ChangePasswordDto } from './dto/changePassword.dto';
 import { UpdateUserDto } from 'src/users/dto/updateUser.dto';
 import { Helper } from 'src/helper/helper';
+import { ForgotPasswordDto } from './dto/forgotPassword.dto';
+import { MailsService } from 'src/mailer/mails/mails.service';
 
 @Injectable()
 export class AuthService {
@@ -18,6 +20,7 @@ export class AuthService {
     private readonly usersService: UsersService,
     private jwtService: JwtService,
     private readonly helper: Helper,
+    private readonly mailsService: MailsService,
   ) {}
 
   async profile(auth: string) {
@@ -155,8 +158,20 @@ export class AuthService {
     }
   }
 
-  async forgotPassword() {
-    return 'forgot-password';
+  async forgotPassword(forgotPasswordDto: ForgotPasswordDto) {
+    const { email, username, token } = forgotPasswordDto;
+    await this.mailsService.forgotPassword({
+      to: email,
+      data: {
+        token,
+        user_name: username,
+      },
+    });
+
+    return {
+      status: 200,
+      message: 'Password reset link sent to email',
+    };
   }
 
   async verifyEmail() {

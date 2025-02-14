@@ -14,6 +14,7 @@ import { Public } from 'src/common/decorators/public.decorator';
 import { ChangePasswordDto } from './dto/changePassword.dto';
 import { UpdateUserDto } from 'src/users/dto/updateUser.dto';
 import { AuthGuard } from '@nestjs/passport';
+import { ForgotPasswordDto } from './dto/forgotPassword.dto';
 
 @Controller('auth')
 export class AuthController {
@@ -57,8 +58,8 @@ export class AuthController {
 
   @Public()
   @Post('forgotPassword')
-  async forgotPassword() {
-    return 'forgot-password';
+  async forgotPassword(@Body() forgotPasswordDto: ForgotPasswordDto) {
+    return this.authService.forgotPassword(forgotPasswordDto);
   }
 
   @Public()
