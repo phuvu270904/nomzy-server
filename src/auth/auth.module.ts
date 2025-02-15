@@ -10,6 +10,8 @@ import { APP_GUARD } from '@nestjs/core';
 import { AuthGuard } from './auth.guard';
 import { Helper } from 'src/helper/helper';
 import { GoogleStrategy } from './google.strategy';
+import { MailsService } from 'src/mailer/mails/mails.service';
+import { MailerService } from 'src/mailer/mailer.service';
 
 @Module({
   imports: [
@@ -30,6 +32,8 @@ import { GoogleStrategy } from './google.strategy';
       useClass: AuthGuard,
     },
     GoogleStrategy,
+    MailsService,
+    MailerService,
   ],
 })
 export class AuthModule {}
