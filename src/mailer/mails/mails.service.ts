@@ -1,5 +1,5 @@
 import { Injectable } from '@nestjs/common';
-import path, { dirname } from 'path';
+import * as path from 'path';
 import { ConfigService } from '@nestjs/config';
 import { MailerService } from 'src/mailer/mailer.service';
 
@@ -17,21 +17,23 @@ export class MailsService {
       user_name: string;
     };
   }): Promise<void> {
+    // Use `process.cwd()` as fallback if `workingDirectory` is not set
+    const workingDir = process.cwd(); // Default to project root
+    const templatePath = path.join(
+      workingDir,
+      'src',
+      'mailer',
+      'templates',
+      'reset-password.hbs',
+    );
+
     await this.mailerService.sendMail({
       to: mailData.to,
       subject: 'Reset Password',
-      templatePath: path.join(
-        this.configService.get<string>('mailer.workingDirectory', {
-          infer: true,
-        }) as string,
-        'src',
-        'mails',
-        'templates',
-        'reset-password.hbs',
-      ),
+      templatePath,
       context: {
         username: mailData.data.user_name,
-        resetLink: `${this.configService.get<string>('app.clientURL')}/reset-password?token=${mailData.data.token}`,
+        resetLink: `${this.configService.get<string>('app.clientURL')}/reset-password?token=${encodeURIComponent(mailData.data.token)}`,
       },
     });
   }
