@@ -12,6 +12,7 @@ import { ChangePasswordDto } from './dto/changePassword.dto';
 import { UpdateUserDto } from 'src/users/dto/updateUser.dto';
 import { Helper } from 'src/helper/helper';
 import * as nodemailer from 'nodemailer';
+import { google } from 'googleapis';
 
 @Injectable()
 export class AuthService {
@@ -157,7 +158,6 @@ export class AuthService {
   }
 
   async forgotPassword(email: string) {
-    console.log(email, 'email');
     const user = await this.usersService.findByEmail(email);
 
     if (!user) throw new NotFoundException('User not found');
@@ -177,15 +177,24 @@ export class AuthService {
   }
 
   private async sendResetEmail(email: string, token: string) {
+    const oAuth2Client = new google.auth.OAuth2(
+      process.env.MAILER_CLIENT_ID,
+      process.env.MAILER_CLIENT_SECRET,
+      process.env.MAILER_REDIRECT_URI,
+    );
+    oAuth2Client.setCredentials({
+      refresh_token: process.env.MAILER_REFRESH_TOKEN,
+    });
+    const accessToken = await oAuth2Client.getAccessToken();
     const transporter = nodemailer.createTransport({
       service: 'gmail',
       auth: {
         type: 'OAuth2',
         user: process.env.MAILER_USER,
-        clientId: process.env.GOOGLE_CLIENT_ID,
-        clientSecret: process.env.GOOGLE_CLIENT_SECRET,
-        refreshToken: process.env.GOOGLE_REFRESH_TOKEN,
-        accessToken: process.env.GOOGLE_ACCESS_TOKEN,
+        clientId: process.env.MAILER_CLIENT_ID,
+        clientSecret: process.env.MAILER_CLIENT_SECRET,
+        refreshToken: process.env.MAILER_REFRESH_TOKEN,
+        accessToken: accessToken.token as string,
       },
     });
 
