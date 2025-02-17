@@ -11,6 +11,7 @@ import { JwtService } from '@nestjs/jwt';
 import { ChangePasswordDto } from './dto/changePassword.dto';
 import { UpdateUserDto } from 'src/users/dto/updateUser.dto';
 import { Helper } from 'src/helper/helper';
+import * as nodemailer from 'nodemailer';
 
 @Injectable()
 export class AuthService {
@@ -155,8 +156,47 @@ export class AuthService {
     }
   }
 
-  async forgotPassword() {
-    return 'forgot-password';
+  async forgotPassword(email: string) {
+    console.log(email, 'email');
+    const user = await this.usersService.findByEmail(email);
+
+    if (!user) throw new NotFoundException('User not found');
+
+    const payload = { id: user.id, email: user.email, role: user.role };
+
+    // Generate a token with expiry
+    const token = this.jwtService.sign(payload, {
+      secret: process.env.JWT_SECRET,
+      expiresIn: '15m',
+    });
+
+    // Send email
+    await this.sendResetEmail(user.email, token);
+
+    return { message: 'Password reset link sent to email' };
+  }
+
+  private async sendResetEmail(email: string, token: string) {
+    const transporter = nodemailer.createTransport({
+      service: 'gmail',
+      auth: {
+        type: 'OAuth2',
+        user: process.env.MAILER_USER,
+        clientId: process.env.GOOGLE_CLIENT_ID,
+        clientSecret: process.env.GOOGLE_CLIENT_SECRET,
+        refreshToken: process.env.GOOGLE_REFRESH_TOKEN,
+        accessToken: process.env.GOOGLE_ACCESS_TOKEN,
+      },
+    });
+
+    const resetUrl = `http://localhost:3000/auth/reset-password?token=${token}`;
+
+    await transporter.sendMail({
+      from: `"Support" ${process.env.MAILER_USER}`,
+      to: email,
+      subject: 'Password Reset Request',
+      text: `Click the following link to reset your password: ${resetUrl}`,
+    });
   }
 
   async verifyEmail() {
