@@ -44,4 +44,8 @@ export class UpdateUserDto {
   @IsString()
   @IsOptional()
   refresh_token?: string;
+
+  @IsString()
+  @IsOptional()
+  resetToken?: string;
 }

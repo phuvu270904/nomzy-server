@@ -74,6 +74,11 @@ export class UserEntity {
   @IsString()
   refresh_token?: string;
 
+  @Column()
+  @IsOptional()
+  @IsString()
+  resetToken?: string;
+
   @CreateDateColumn({ type: 'timestamp' })
   createdAt: Date;
 
