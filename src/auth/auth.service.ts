@@ -1,4 +1,5 @@
 import {
+  BadRequestException,
   Injectable,
   NotFoundException,
   UnauthorizedException,
@@ -13,6 +14,7 @@ import { UpdateUserDto } from 'src/users/dto/updateUser.dto';
 import { Helper } from 'src/helper/helper';
 import * as nodemailer from 'nodemailer';
 import { google } from 'googleapis';
+import { ResetPasswordDto } from './dto/resetPassword.dto';
 
 @Injectable()
 export class AuthService {
@@ -170,6 +172,8 @@ export class AuthService {
       expiresIn: '15m',
     });
 
+    await this.usersService.updateResetToken(user.id, token);
+
     // Send email
     await this.sendResetEmail(user.email, token);
 
@@ -206,6 +210,25 @@ export class AuthService {
       subject: 'Password Reset Request',
       text: `Click the following link to reset your password: ${resetUrl}`,
     });
+  }
+
+  async resetPassword(resetPasswordDto: ResetPasswordDto) {
+    try {
+      const payload = await this.jwtService.verifyAsync(
+        resetPasswordDto.token,
+        { secret: process.env.JWT_SECRET },
+      );
+      const user = await this.usersService.findOne(payload.id);
+
+      if (!user) throw new NotFoundException('User not found');
+
+      const hashedPassword = await bcrypt.hash(resetPasswordDto.password, 10);
+      await this.usersService.updatePassword(user.id, hashedPassword);
+
+      return { message: 'Password reset successful' };
+    } catch (error) {
+      throw new BadRequestException('Invalid or expired token');
+    }
   }
 
   async verifyEmail() {

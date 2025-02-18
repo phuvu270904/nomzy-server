@@ -48,4 +48,20 @@ export class UsersService {
   async remove(id: number): Promise<void> {
     await this.userRepository.delete(id);
   }
+
+  async updateResetToken(
+    id: number,
+    resetToken: string,
+  ): Promise<UpdateUserDto | null> {
+    await this.userRepository.update(id, { resetToken });
+    return this.userRepository.findOne({ where: { id } });
+  }
+
+  async updatePassword(
+    id: number,
+    hashedPassword: string,
+  ): Promise<UpdateUserDto | null> {
+    await this.userRepository.update(id, { password: hashedPassword });
+    return this.userRepository.findOne({ where: { id } });
+  }
 }

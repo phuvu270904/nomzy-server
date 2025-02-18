@@ -14,6 +14,7 @@ import { Public } from 'src/common/decorators/public.decorator';
 import { ChangePasswordDto } from './dto/changePassword.dto';
 import { UpdateUserDto } from 'src/users/dto/updateUser.dto';
 import { AuthGuard } from '@nestjs/passport';
+import { ResetPasswordDto } from './dto/resetPassword.dto';
 
 @Controller('auth')
 export class AuthController {
@@ -59,6 +60,12 @@ export class AuthController {
   @Post('forgotPassword')
   async forgotPassword(@Body('email') email: string) {
     return this.authService.forgotPassword(email);
+  }
+
+  @Public()
+  @Post('resetPassword')
+  async resetPassword(@Body() resetPasswordDto: ResetPasswordDto) {
+    return this.authService.resetPassword(resetPasswordDto);
   }
 
   @Public()
