@@ -11,7 +11,6 @@ import * as bcrypt from 'bcrypt';
 import { JwtService } from '@nestjs/jwt';
 import { ChangePasswordDto } from './dto/changePassword.dto';
 import { UpdateUserDto } from 'src/users/dto/updateUser.dto';
-import { Helper } from 'src/helper/helper';
 import * as nodemailer from 'nodemailer';
 import { google } from 'googleapis';
 import { ResetPasswordDto } from './dto/resetPassword.dto';
@@ -21,7 +20,6 @@ export class AuthService {
   constructor(
     private readonly usersService: UsersService,
     private jwtService: JwtService,
-    private readonly helper: Helper,
   ) {}
 
   async profile(user: any) {

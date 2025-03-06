@@ -16,11 +16,12 @@ export class CartController {
   constructor(private readonly cartService: CartService) {}
 
   @UseGuards(JwtAuthGuard)
-  @Get('getCart')
+  @Get()
   getCart(@Request() req) {
     return this.cartService.getCart(req.user);
   }
 
+  @UseGuards(JwtAuthGuard)
   @Post('clear')
   clearCart(@Request() req) {
     return this.cartService.clearCart(req.user);
