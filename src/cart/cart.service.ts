@@ -11,14 +11,12 @@ export class CartService {
     private readonly helper: Helper,
   ) {}
 
-  async getCart(token: string) {
-    const user = await this.helper.validateUserFromToken(token);
-    return this.cartModel.findById({ user });
+  async getCart(user: any) {
+    return this.cartModel.findById({ user: user.id });
   }
 
-  async clearCart(token: string) {
-    const user = await this.helper.validateUserFromToken(token);
-    await this.cartModel.findByIdAndDelete({ user });
+  async clearCart(user: any) {
+    await this.cartModel.findByIdAndDelete({ user: user.id });
   }
 
   async addToCart(body: any) {
