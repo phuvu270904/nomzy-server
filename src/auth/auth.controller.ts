@@ -5,6 +5,7 @@ import {
   Headers,
   Post,
   Req,
+  Request,
   UseGuards,
 } from '@nestjs/common';
 import { AuthService } from './auth.service';
@@ -15,16 +16,16 @@ import { ChangePasswordDto } from './dto/changePassword.dto';
 import { UpdateUserDto } from 'src/users/dto/updateUser.dto';
 import { AuthGuard } from '@nestjs/passport';
 import { ResetPasswordDto } from './dto/resetPassword.dto';
+import { JwtAuthGuard } from './jwt-auth.guard';
 
 @Controller('auth')
 export class AuthController {
   constructor(private readonly authService: AuthService) {}
 
+  @UseGuards(JwtAuthGuard)
   @Get('profile')
-  async profile(@Headers('authorization') auth: string) {
-    const split = auth.split(' ');
-    const token = split[1];
-    return this.authService.profile(token);
+  async profile(@Request() req) {
+    return this.authService.profile(req.user);
   }
 
   @Public()
@@ -39,21 +40,19 @@ export class AuthController {
     return this.authService.register(CreateUserDto);
   }
 
+  @UseGuards(JwtAuthGuard)
   @Post('logout')
-  async logout(@Headers('authorization') auth: string) {
-    const split = auth.split(' ');
-    const token = split[1];
-    return this.authService.logout(token);
+  async logout(@Request() req) {
+    return this.authService.logout(req.user);
   }
 
+  @UseGuards(JwtAuthGuard)
   @Post('refresh')
   async refreshToken(
-    @Headers('authorization') auth: string,
+    @Request() req,
     @Body('refreshToken') refreshToken: string,
   ) {
-    const split = auth.split(' ');
-    const token = split[1];
-    return this.authService.refresh(token, refreshToken);
+    return this.authService.refresh(req.user, refreshToken);
   }
 
   @Public()
@@ -74,24 +73,18 @@ export class AuthController {
     return 'verify-email';
   }
 
+  @UseGuards(JwtAuthGuard)
   @Post('changePassword')
   async changePassword(
-    @Headers('authorization') auth: string,
+    @Request() req,
     @Body() changePasswordDto: ChangePasswordDto,
   ) {
-    const split = auth.split(' ');
-    const token = split[1];
-    return this.authService.changePassword(token, changePasswordDto);
+    return this.authService.changePassword(req.user, changePasswordDto);
   }
 
   @Post('updateProfile')
-  async updateProfile(
-    @Headers('authorization') auth: string,
-    @Body() UpdateUserDto: UpdateUserDto,
-  ) {
-    const split = auth.split(' ');
-    const token = split[1];
-    return this.authService.updateProfile(token, UpdateUserDto);
+  async updateProfile(@Request() req, @Body() UpdateUserDto: UpdateUserDto) {
+    return this.authService.updateProfile(req.user, UpdateUserDto);
   }
 
   @Public()

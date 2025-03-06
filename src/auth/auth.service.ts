@@ -11,7 +11,6 @@ import * as bcrypt from 'bcrypt';
 import { JwtService } from '@nestjs/jwt';
 import { ChangePasswordDto } from './dto/changePassword.dto';
 import { UpdateUserDto } from 'src/users/dto/updateUser.dto';
-import { Helper } from 'src/helper/helper';
 import * as nodemailer from 'nodemailer';
 import { google } from 'googleapis';
 import { ResetPasswordDto } from './dto/resetPassword.dto';
@@ -21,22 +20,17 @@ export class AuthService {
   constructor(
     private readonly usersService: UsersService,
     private jwtService: JwtService,
-    private readonly helper: Helper,
   ) {}
 
-  async profile(auth: string) {
-    const payload = this.jwtService.verify(auth, {
-      secret: process.env.JWT_SECRET,
-    });
-
-    const user = await this.usersService.findOne(payload.id);
-    if (!user) {
+  async profile(user: any) {
+    const userMatched = await this.usersService.findOne(user.id);
+    if (!userMatched) {
       throw new NotFoundException({ status: 404, message: 'User not found' });
     }
-    const { password, ...result } = user;
+    const { password, ...result } = userMatched;
 
     return {
-      jwt: auth,
+      jwt: user,
       user: result,
     };
   }
@@ -83,27 +77,16 @@ export class AuthService {
     return this.usersService.create(user);
   }
 
-  async logout(token: string) {
+  async logout(user: any) {
     try {
-      if (!token) {
-        throw new UnauthorizedException('Cannot find access token.');
-      }
-
-      const decoded = await this.jwtService.verifyAsync(token, {
-        secret: process.env.JWT_SECRET,
-        ignoreExpiration: true,
-      });
-
-      if (!decoded) {
-        throw new UnauthorizedException('Access token is invalid.');
-      }
-
-      const user = await this.usersService.findOne(decoded.id);
-      if (!user) {
+      const userMatched = await this.usersService.findOne(user.id);
+      if (!userMatched) {
         throw new NotFoundException('User not found');
       }
 
-      await this.usersService.update(user.id, { refresh_token: undefined });
+      await this.usersService.update(userMatched.id, {
+        refresh_token: undefined,
+      });
 
       return {
         status: 200,
@@ -114,9 +97,9 @@ export class AuthService {
     }
   }
 
-  async refresh(token: string, refreshToken: string) {
+  async refresh(user: any, refreshToken: string) {
     try {
-      const user = await this.helper.validateUserFromToken(token);
+      const userMatched = await this.usersService.findOne(user.id);
       if (!refreshToken) {
         throw new UnauthorizedException('Cannot find refresh token.');
       }
@@ -132,14 +115,14 @@ export class AuthService {
         throw new UnauthorizedException('Refresh token is invalid.');
       }
 
-      if (refreshToken !== user.refresh_token) {
+      if (refreshToken !== userMatched?.refresh_token) {
         throw new UnauthorizedException('Invalid refresh token');
       }
 
       const dataForAccessToken = {
-        id: user.id,
-        email: user.email,
-        role: user.role,
+        id: userMatched.id,
+        email: userMatched.email,
+        role: userMatched.role,
       };
 
       const newAccessToken = this.jwtService.sign(dataForAccessToken, {
@@ -235,13 +218,13 @@ export class AuthService {
     return 'verify-email';
   }
 
-  async changePassword(token: string, changePasswordDto: ChangePasswordDto) {
+  async changePassword(user: any, changePasswordDto: ChangePasswordDto) {
     try {
-      const user = await this.helper.validateUserFromToken(token);
+      const userMatched = await this.usersService.findOne(user.id);
 
       const isMatch = await bcrypt.compare(
         changePasswordDto.oldPassword,
-        user.password,
+        userMatched?.password,
       );
       if (!isMatch) {
         throw new UnauthorizedException('Incorrect old password');
@@ -262,9 +245,9 @@ export class AuthService {
     }
   }
 
-  async updateProfile(token: string, updateUserDto: UpdateUserDto) {
+  async updateProfile(user: any, updateUserDto: UpdateUserDto) {
     try {
-      const user = await this.helper.validateUserFromToken(token);
+      const userMatched = await this.usersService.findOne(user.id);
 
       await this.usersService.update(user.id, updateUserDto);
 

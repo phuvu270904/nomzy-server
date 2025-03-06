@@ -8,8 +8,8 @@ import { JwtModule } from '@nestjs/jwt';
 import { UsersModule } from 'src/users/users.module';
 import { APP_GUARD } from '@nestjs/core';
 import { AuthGuard } from './auth.guard';
-import { Helper } from 'src/helper/helper';
 import { GoogleStrategy } from './google.strategy';
+import { JwtStrategy } from './jwt.strategy';
 
 @Module({
   imports: [
@@ -24,12 +24,12 @@ import { GoogleStrategy } from './google.strategy';
   providers: [
     AuthService,
     UsersService,
-    Helper,
     {
       provide: APP_GUARD,
       useClass: AuthGuard,
     },
     GoogleStrategy,
+    JwtStrategy,
   ],
 })
 export class AuthModule {}
