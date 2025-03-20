@@ -51,7 +51,7 @@ export class AuthService {
       });
     }
 
-    const payload = { id: user.id, email: user.email, role: user.role };
+    const payload = { id: user.id, email: user.email };
 
     const accessToken = this.jwtService.sign(payload, {
       secret: process.env.JWT_SECRET,
@@ -122,7 +122,6 @@ export class AuthService {
       const dataForAccessToken = {
         id: userMatched.id,
         email: userMatched.email,
-        role: userMatched.role,
       };
 
       const newAccessToken = this.jwtService.sign(dataForAccessToken, {
@@ -147,7 +146,7 @@ export class AuthService {
 
     if (!user) throw new NotFoundException('User not found');
 
-    const payload = { id: user.id, email: user.email, role: user.role };
+    const payload = { id: user.id, email: user.email };
 
     // Generate a token with expiry
     const token = this.jwtService.sign(payload, {

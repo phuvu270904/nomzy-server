@@ -62,10 +62,6 @@ export class UserEntity {
   country?: string;
 
   @Column()
-  @IsString()
-  role: string;
-
-  @Column()
   @IsOptional()
   avatar?: string;
 
