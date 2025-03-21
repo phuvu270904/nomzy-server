@@ -23,7 +23,7 @@ export class AuthService {
   ) {}
 
   async profile(user: any) {
-    const userMatched = await this.usersService.findOne(user.id);
+    const userMatched = await this.usersService.findWithRoles(user.id);
     if (!userMatched) {
       throw new NotFoundException({ status: 404, message: 'User not found' });
     }

@@ -1,16 +1,19 @@
 import { Injectable } from '@nestjs/common';
 import { UserEntity } from './entities/user.entity';
 import { InjectRepository } from '@nestjs/typeorm';
-import { Repository } from 'typeorm';
+import { In, Repository } from 'typeorm';
 import { CreateUserDto } from './dto/createUser.dto';
 import { UpdateUserDto } from './dto/updateUser.dto';
 import * as bcrypt from 'bcrypt';
+import { RoleEntity } from './entities/role.entity';
 
 @Injectable()
 export class UsersService {
   constructor(
     @InjectRepository(UserEntity)
     private readonly userRepository: Repository<UserEntity>,
+    @InjectRepository(RoleEntity)
+    private readonly roleRepository: Repository<RoleEntity>,
   ) {}
 
   async findAll(): Promise<any[]> {
@@ -29,14 +32,34 @@ export class UsersService {
     return this.userRepository.findOne({ where: { id } });
   }
 
+  async findWithRoles(id: number): Promise<UserEntity | null> {
+    return this.userRepository.findOne({
+      where: { id },
+      relations: ['roles'],
+    });
+  }
+
   async findByEmail(email: string): Promise<UserEntity | null> {
     return this.userRepository.findOne({ where: { email } });
   }
 
-  async create(user: CreateUserDto): Promise<UserEntity> {
+  async create(user: CreateUserDto): Promise<CreateUserDto> {
     const hashedPassword = await bcrypt.hash(user.password, 10);
 
-    const newUser = { ...user, password: hashedPassword };
+    const roles = await this.roleRepository.find({
+      where: { name: In(user.roles) },
+    });
+
+    if (!roles) {
+      throw new Error('Default user role not found');
+    }
+
+    const newUser = {
+      ...user,
+      password: hashedPassword,
+      roles,
+    };
+
     return this.userRepository.save(newUser);
   }
 
