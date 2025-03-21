@@ -1,13 +1,13 @@
-import { Entity, Column, ManyToOne, JoinColumn } from 'typeorm';
+import { Entity, ManyToOne, JoinColumn, PrimaryColumn } from 'typeorm';
 import { UserEntity } from './user.entity';
 import { RoleEntity } from './role.entity';
 
 @Entity('users_roles')
 export class UserRoleEntity {
-  @Column()
+  @PrimaryColumn()
   userId: number;
 
-  @Column()
+  @PrimaryColumn()
   roleId: number;
 
   @ManyToOne(() => UserEntity)
