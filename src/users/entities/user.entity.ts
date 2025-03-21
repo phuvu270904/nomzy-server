@@ -11,7 +11,10 @@ import {
   Column,
   CreateDateColumn,
   UpdateDateColumn,
+  JoinTable,
+  ManyToMany,
 } from 'typeorm';
+import { RoleEntity } from './role.entity';
 
 export enum Gender {
   MALE = 'male',
@@ -64,6 +67,10 @@ export class UserEntity {
   @Column()
   @IsOptional()
   avatar?: string;
+
+  @ManyToMany(() => RoleEntity)
+  @JoinTable()
+  roles: RoleEntity[];
 
   @Column()
   @IsOptional()
