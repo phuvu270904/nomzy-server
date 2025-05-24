@@ -22,8 +22,8 @@ export class UsersController {
   }
 
   @Get(':id')
-  async findOne(@Param('id') id: string): Promise<UserEntity | null> {
-    return this.usersService.findOne(+id);
+  async findOne(@Param('id') id: number): Promise<UserEntity | null> {
+    return this.usersService.findOne(id);
   }
 
   @Post()
@@ -35,14 +35,14 @@ export class UsersController {
 
   @Put(':id')
   async update(
-    @Param('id') id: string,
+    @Param('id') id: number,
     @Body() updateUserDto: UpdateUserDto,
   ): Promise<UpdateUserDto | null> {
-    return this.usersService.update(+id, updateUserDto);
+    return this.usersService.update(id, updateUserDto);
   }
 
   @Delete(':id')
-  async remove(@Param('id') id: string): Promise<void> {
-    return this.usersService.remove(+id);
+  async remove(@Param('id') id: number): Promise<void> {
+    return this.usersService.remove(id);
   }
 }
