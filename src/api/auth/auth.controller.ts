@@ -16,8 +16,9 @@ import { ChangePasswordDto } from './dto/changePassword.dto';
 import { UpdateUserDto } from '../users/dto/updateUser.dto'; 
 import { AuthGuard } from '@nestjs/passport';
 import { ResetPasswordDto } from './dto/resetPassword.dto';
-import { JwtAuthGuard } from './jwt-auth.guard';
 import { ApiTags, ApiOperation, ApiBody, ApiBearerAuth } from '@nestjs/swagger';
+import { Roles } from 'src/roles/roles.decorator';
+import { Role } from 'src/roles/role.enum';
 
 @ApiTags('Auth')
 @Controller('auth')
@@ -25,8 +26,8 @@ export class AuthController {
   constructor(private readonly authService: AuthService) {}
 
   @ApiOperation({ summary: 'Get profile' })
-  @UseGuards(JwtAuthGuard)
   @ApiBearerAuth('access-token')
+  @Roles(Role.ADMIN)
   @Get('profile')
   async profile(@Request() req) {
     return this.authService.profile(req.user);
@@ -46,14 +47,12 @@ export class AuthController {
     return this.authService.register(CreateUserDto);
   }
 
-  @UseGuards(JwtAuthGuard)
   @ApiBearerAuth('access-token')
   @Post('logout')
   async logout(@Request() req) {
     return this.authService.logout(req.user);
   }
 
-  @UseGuards(JwtAuthGuard)
   @ApiBearerAuth('access-token')
   @Post('refresh')
   async refreshToken(
@@ -75,7 +74,6 @@ export class AuthController {
     return this.authService.resetPassword(resetPasswordDto);
   }
 
-  @UseGuards(JwtAuthGuard)
   @ApiBearerAuth('access-token')
   @Post('changePassword')
   async changePassword(

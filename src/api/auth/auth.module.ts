@@ -8,7 +8,7 @@ import { UsersModule } from '../users/users.module';
 import { APP_GUARD } from '@nestjs/core';
 import { AuthGuard } from './auth.guard';
 import { GoogleStrategy } from './google.strategy';
-import { JwtStrategy } from './jwt.strategy';
+import { RolesGuard } from 'src/roles/roles.guard';
 
 @Module({
   imports: [
@@ -26,8 +26,11 @@ import { JwtStrategy } from './jwt.strategy';
       provide: APP_GUARD,
       useClass: AuthGuard,
     },
+    {
+      provide: APP_GUARD,
+      useClass: RolesGuard,
+    },
     GoogleStrategy,
-    JwtStrategy,
   ],
 })
 export class AuthModule {}

@@ -51,7 +51,9 @@ export class AuthService {
       });
     }
 
-    const payload = { id: user.id, email: user.email };
+    const roleName = user.roles.map((role) => role.name);
+
+    const payload = { id: user.id, email: user.email, roles: roleName };
 
     const accessToken = this.jwtService.sign(payload, {
       secret: process.env.JWT_SECRET,
