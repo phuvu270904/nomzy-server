@@ -17,7 +17,7 @@ import { UpdateUserDto } from '../users/dto/updateUser.dto';
 import { AuthGuard } from '@nestjs/passport';
 import { ResetPasswordDto } from './dto/resetPassword.dto';
 import { JwtAuthGuard } from './jwt-auth.guard';
-import { ApiTags, ApiOperation, ApiBody } from '@nestjs/swagger';
+import { ApiTags, ApiOperation, ApiBody, ApiBearerAuth } from '@nestjs/swagger';
 
 @ApiTags('Auth')
 @Controller('auth')
@@ -26,6 +26,7 @@ export class AuthController {
 
   @ApiOperation({ summary: 'Get profile' })
   @UseGuards(JwtAuthGuard)
+  @ApiBearerAuth('access-token')
   @Get('profile')
   async profile(@Request() req) {
     return this.authService.profile(req.user);
@@ -46,12 +47,14 @@ export class AuthController {
   }
 
   @UseGuards(JwtAuthGuard)
+  @ApiBearerAuth('access-token')
   @Post('logout')
   async logout(@Request() req) {
     return this.authService.logout(req.user);
   }
 
   @UseGuards(JwtAuthGuard)
+  @ApiBearerAuth('access-token')
   @Post('refresh')
   async refreshToken(
     @Request() req,
@@ -72,13 +75,8 @@ export class AuthController {
     return this.authService.resetPassword(resetPasswordDto);
   }
 
-  @Public()
-  @Post('verifyEmail')
-  async verifyEmail() {
-    return 'verify-email';
-  }
-
   @UseGuards(JwtAuthGuard)
+  @ApiBearerAuth('access-token')
   @Post('changePassword')
   async changePassword(
     @Request() req,
@@ -87,6 +85,7 @@ export class AuthController {
     return this.authService.changePassword(req.user, changePasswordDto);
   }
 
+  @ApiBearerAuth('access-token')
   @Post('updateProfile')
   async updateProfile(@Request() req, @Body() UpdateUserDto: UpdateUserDto) {
     return this.authService.updateProfile(req.user, UpdateUserDto);
