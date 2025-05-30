@@ -27,7 +27,6 @@ export class AuthController {
 
   @ApiOperation({ summary: 'Get profile' })
   @ApiBearerAuth('access-token')
-  @Roles(Role.ADMIN)
   @Get('profile')
   async profile(@Request() req) {
     return this.authService.profile(req.user);
