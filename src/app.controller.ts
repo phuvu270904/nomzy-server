@@ -9,8 +9,6 @@ export class AppController {
   @Public()
   @Get()
   getHello(): string {
-    console.log("xin chao");
-    
     return this.appService.getNomzyApi();
   }
 }
