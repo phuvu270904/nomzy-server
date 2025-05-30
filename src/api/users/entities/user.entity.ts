@@ -27,44 +27,44 @@ export class UserEntity {
   @PrimaryGeneratedColumn()
   id: number;
 
-  @Column({ length: 50 })
+  @Column({ type: 'varchar', length: 50 })
   @IsString()
   first_name: string;
 
-  @Column({ length: 50 })
+  @Column({ type: 'varchar', length: 50 })
   @IsString()
   last_name: string;
 
-  @Column()
+  @Column({ type: 'varchar', length: 50, nullable: true })
   @IsOptional()
-  gender?: Gender;
+  gender?: string;
 
-  @Column({ unique: true })
+  @Column({ type: 'varchar', length: 255, unique: true })
   @IsEmail()
   email: string;
 
-  @Column()
+  @Column({ type: 'varchar', length: 255 })
   @IsString()
   @MinLength(8)
   password: string;
 
-  @Column()
+  @Column({ type: 'varchar', length: 20 })
   @IsPhoneNumber()
   phone_number: string;
 
-  @Column()
+  @Column({ type: 'text', nullable: true })
   @IsOptional()
   address?: string;
 
-  @Column()
+  @Column({ type: 'varchar', length: 255, nullable: true })
   @IsOptional()
   city?: string;
 
-  @Column()
+  @Column({ type: 'varchar', length: 255, nullable: true })
   @IsOptional()
   country?: string;
 
-  @Column()
+  @Column({ type: 'text', nullable: true })
   @IsOptional()
   avatar?: string;
 
@@ -72,12 +72,12 @@ export class UserEntity {
   @JoinTable()
   roles: RoleEntity[];
 
-  @Column()
+  @Column({ type: 'varchar', length: 255, nullable: true })
   @IsOptional()
   @IsString()
   refresh_token?: string;
 
-  @Column()
+  @Column({ type: 'varchar', length: 255, nullable: true })
   @IsOptional()
   @IsString()
   resetToken?: string;

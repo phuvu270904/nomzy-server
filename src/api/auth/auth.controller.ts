@@ -17,17 +17,22 @@ import { UpdateUserDto } from '../users/dto/updateUser.dto';
 import { AuthGuard } from '@nestjs/passport';
 import { ResetPasswordDto } from './dto/resetPassword.dto';
 import { JwtAuthGuard } from './jwt-auth.guard';
+import { ApiTags, ApiOperation, ApiBody } from '@nestjs/swagger';
 
+@ApiTags('Auth')
 @Controller('auth')
 export class AuthController {
   constructor(private readonly authService: AuthService) {}
 
+  @ApiOperation({ summary: 'Get profile' })
   @UseGuards(JwtAuthGuard)
   @Get('profile')
   async profile(@Request() req) {
     return this.authService.profile(req.user);
   }
 
+  @ApiOperation({ summary: 'Login' })
+  @ApiBody({ type: LoginDto })
   @Public()
   @Post('login')
   async login(@Body() loginDto: LoginDto) {

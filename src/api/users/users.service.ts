@@ -46,18 +46,16 @@ export class UsersService {
   async create(user: CreateUserDto): Promise<CreateUserDto> {
     const hashedPassword = await bcrypt.hash(user.password, 10);
 
-    const roles = await this.roleRepository.find({
-      where: { name: In(user.roles) },
-    });
-
-    if (!roles) {
-      throw new Error('Default user role not found');
-    }
+    const userRoleRegistered = await this.roleRepository.find({
+      where: {
+        name: 'user',
+      },
+    })
 
     const newUser = {
       ...user,
       password: hashedPassword,
-      roles,
+      roles: userRoleRegistered,
     };
 
     return this.userRepository.save(newUser);
