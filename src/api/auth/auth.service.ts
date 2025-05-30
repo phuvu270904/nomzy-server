@@ -4,13 +4,13 @@ import {
   NotFoundException,
   UnauthorizedException,
 } from '@nestjs/common';
-import { CreateUserDto } from 'src/users/dto/createUser.dto';
-import { UsersService } from 'src/users/users.service';
+import { CreateUserDto } from '../users/dto/createUser.dto';
+import { UsersService } from '../users/users.service';
 import { LoginDto } from './dto/login.dto';
 import * as bcrypt from 'bcrypt';
 import { JwtService } from '@nestjs/jwt';
 import { ChangePasswordDto } from './dto/changePassword.dto';
-import { UpdateUserDto } from 'src/users/dto/updateUser.dto';
+import { UpdateUserDto } from '../users/dto/updateUser.dto';
 import * as nodemailer from 'nodemailer';
 import { google } from 'googleapis';
 import { ResetPasswordDto } from './dto/resetPassword.dto';

@@ -9,11 +9,11 @@ import {
   UseGuards,
 } from '@nestjs/common';
 import { AuthService } from './auth.service';
-import { CreateUserDto } from 'src/users/dto/createUser.dto';
+import { CreateUserDto } from '../users/dto/createUser.dto';
 import { LoginDto } from './dto/login.dto';
 import { Public } from 'src/common/decorators/public.decorator';
 import { ChangePasswordDto } from './dto/changePassword.dto';
-import { UpdateUserDto } from 'src/users/dto/updateUser.dto';
+import { UpdateUserDto } from '../users/dto/updateUser.dto'; 
 import { AuthGuard } from '@nestjs/passport';
 import { ResetPasswordDto } from './dto/resetPassword.dto';
 import { JwtAuthGuard } from './jwt-auth.guard';
