@@ -213,10 +213,6 @@ export class AuthService {
     }
   }
 
-  async verifyEmail() {
-    return 'verify-email';
-  }
-
   async changePassword(user: any, changePasswordDto: ChangePasswordDto) {
     try {
       const userMatched = await this.usersService.findOne(user.id);
