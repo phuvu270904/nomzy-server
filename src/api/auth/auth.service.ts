@@ -37,6 +37,9 @@ export class AuthService {
 
   async login(loginDto: LoginDto) {
     const { email, password } = loginDto;
+    const findAl = await this.usersService.findAll();
+    console.log(findAl, "findall");
+    
     const user = await this.usersService.findOneByEmail(email);
 
     if (!user) {
