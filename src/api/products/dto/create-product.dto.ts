@@ -13,7 +13,7 @@ import { ApiProperty, ApiPropertyOptional } from '@nestjs/swagger';
 export class CreateProductDto {
   @ApiProperty({
     description: 'Product name',
-    example: 'Smartphone X1',
+    example: 'Carbonara Pasta',
   })
   @IsNotEmpty()
   @IsString()
@@ -21,7 +21,7 @@ export class CreateProductDto {
 
   @ApiPropertyOptional({
     description: 'Product description',
-    example: 'Latest smartphone with advanced features',
+    example: 'Delicious carbonara pasta with creamy sauce and pancetta',
   })
   @IsOptional()
   @IsString()
@@ -29,7 +29,7 @@ export class CreateProductDto {
 
   @ApiProperty({
     description: 'Product price',
-    example: 599.99,
+    example: 19.99,
   })
   @IsNotEmpty()
   @IsNumber()
@@ -57,6 +57,6 @@ export class CreateProductDto {
     example: 1,
   })
   @IsOptional()
-  @IsInt()
+  @IsNumber()
   categoryId?: number;
 }
