@@ -246,6 +246,10 @@ export class AuthService {
     try {
       const userMatched = await this.usersService.findOne(user.id);
 
+      if (!userMatched) {
+        throw new NotFoundException('User not found');
+      }
+
       await this.usersService.update(user.id, updateUserDto);
 
       return {
