@@ -37,6 +37,7 @@ export class AuthController {
     return this.authService.login(loginDto);
   }
 
+  @ApiOperation({ summary: 'Register user account' })
   @Public()
   @Post('register')
   async register(@Body() CreateUserDto: CreateUserDto) {
