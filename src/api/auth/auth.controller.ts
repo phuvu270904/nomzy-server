@@ -16,6 +16,7 @@ import { UpdateUserDto } from '../users/dto/updateUser.dto';
 import { AuthGuard } from '@nestjs/passport';
 import { ResetPasswordDto } from './dto/resetPassword.dto';
 import { ApiTags, ApiOperation, ApiBody, ApiBearerAuth } from '@nestjs/swagger';
+import { RegisterDto } from './dto/register.dto';
 
 @ApiTags('Auth')
 @Controller('auth')
@@ -39,9 +40,23 @@ export class AuthController {
 
   @ApiOperation({ summary: 'Register user account' })
   @Public()
-  @Post('register')
-  async register(@Body() CreateUserDto: CreateUserDto) {
-    return this.authService.register(CreateUserDto);
+  @Post('registerUser')
+  async registerUser(@Body() registerDto: RegisterDto) {
+    return this.authService.registerUser(registerDto);
+  }
+
+  @ApiOperation({ summary: 'Register driver account' })
+  @Public()
+  @Post('registerDriver')
+  async registerDriver(@Body() registerDto: RegisterDto) {
+    return this.authService.registerDriver(registerDto);
+  }
+
+  @ApiOperation({ summary: 'Register owner account' })
+  @Public()
+  @Post('registerOwner')
+  async registerOwner(@Body() registerDto: RegisterDto) {
+    return this.authService.registerOwner(registerDto);
   }
 
   @ApiBearerAuth('access-token')

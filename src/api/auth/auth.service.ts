@@ -14,6 +14,7 @@ import { UpdateUserDto } from '../users/dto/updateUser.dto';
 import * as nodemailer from 'nodemailer';
 import { google } from 'googleapis';
 import { ResetPasswordDto } from './dto/resetPassword.dto';
+import { RegisterDto } from './dto/register.dto';
 
 @Injectable()
 export class AuthService {
@@ -75,8 +76,28 @@ export class AuthService {
     };
   }
 
-  async register(user: CreateUserDto) {
-    return this.usersService.create(user);
+  async registerUser(registerDto: RegisterDto) {
+    const newUserRole = {
+      ...registerDto,
+      role: 'user',
+    };
+    return this.usersService.create(newUserRole);
+  }
+
+  async registerDriver(registerDto: RegisterDto) {
+    const newUserRole = {
+      ...registerDto,
+      role: 'driver',
+    };
+    return this.usersService.create(newUserRole);
+  }
+
+  async registerOwner(registerDto: RegisterDto) {
+    const newUserRole = {
+      ...registerDto,
+      role: 'owner',
+    };
+    return this.usersService.create(newUserRole);
   }
 
   async logout(user: any) {

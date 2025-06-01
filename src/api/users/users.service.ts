@@ -51,7 +51,7 @@ export class UsersService {
 
     const userRoleRegistered = await this.roleRepository.find({
       where: {
-        name: 'user',
+        name: user.role,
       },
     });
 
