@@ -25,7 +25,10 @@ export class UsersService {
   }
 
   async findOneByEmail(email: string): Promise<UserEntity | null> {
-    return this.userRepository.findOne({ where: { email }, relations: ['roles'] });
+    return this.userRepository.findOne({
+      where: { email },
+      relations: ['roles'],
+    });
   }
 
   async findOne(id: number): Promise<UserEntity | null> {
@@ -50,7 +53,7 @@ export class UsersService {
       where: {
         name: 'user',
       },
-    })
+    });
 
     const newUser = {
       ...user,
