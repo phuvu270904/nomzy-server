@@ -61,7 +61,6 @@ export class ProductsController {
   @ApiResponse({
     status: 201,
     description: 'The product has been successfully created',
-    type: ProductEntity,
   })
   @ApiBearerAuth('access-token')
   @Post()
@@ -79,7 +78,6 @@ export class ProductsController {
   @ApiResponse({
     status: 200,
     description: 'The product has been successfully updated',
-    type: ProductEntity,
   })
   @ApiResponse({ status: 404, description: 'Product not found' })
   @ApiBearerAuth('access-token')
