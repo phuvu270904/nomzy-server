@@ -2,7 +2,6 @@ import {
   Body,
   Controller,
   Get,
-  Headers,
   Post,
   Req,
   Request,
@@ -13,12 +12,10 @@ import { CreateUserDto } from '../users/dto/createUser.dto';
 import { LoginDto } from './dto/login.dto';
 import { Public } from 'src/common/decorators/public.decorator';
 import { ChangePasswordDto } from './dto/changePassword.dto';
-import { UpdateUserDto } from '../users/dto/updateUser.dto'; 
+import { UpdateUserDto } from '../users/dto/updateUser.dto';
 import { AuthGuard } from '@nestjs/passport';
 import { ResetPasswordDto } from './dto/resetPassword.dto';
 import { ApiTags, ApiOperation, ApiBody, ApiBearerAuth } from '@nestjs/swagger';
-import { Roles } from 'src/roles/roles.decorator';
-import { Role } from 'src/roles/role.enum';
 
 @ApiTags('Auth')
 @Controller('auth')
