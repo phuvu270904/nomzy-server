@@ -88,4 +88,12 @@ export class UsersService {
     await this.userRepository.update(id, { password: hashedPassword });
     return this.userRepository.findOne({ where: { id } });
   }
+
+  async updateRefreshToken(
+    id: number,
+    refreshToken: string | undefined,
+  ): Promise<UpdateUserDto | null> {
+    await this.userRepository.update(id, { refresh_token: refreshToken });
+    return this.userRepository.findOne({ where: { id } });
+  }
 }

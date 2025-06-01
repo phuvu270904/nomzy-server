@@ -65,7 +65,7 @@ export class AuthService {
       expiresIn: '7d',
     });
 
-    await this.usersService.update(user.id, { refresh_token: refreshToken });
+    await this.usersService.updateRefreshToken(user.id, refreshToken);
 
     return {
       status: 200,
@@ -86,10 +86,7 @@ export class AuthService {
         throw new NotFoundException('User not found');
       }
 
-      await this.usersService.update(userMatched.id, {
-        refresh_token: undefined,
-      });
-
+      await this.usersService.updateRefreshToken(userMatched.id, undefined);
       return {
         status: 200,
         message: 'Logout successful',
@@ -229,7 +226,7 @@ export class AuthService {
 
       const newPassword = await bcrypt.hash(changePasswordDto.newPassword, 10);
 
-      await this.usersService.update(user.id, { password: newPassword });
+      await this.usersService.updatePassword(user.id, newPassword);
 
       return {
         status: 200,
