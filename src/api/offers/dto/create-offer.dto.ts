@@ -1,6 +1,15 @@
-import { IsNotEmpty, IsOptional, IsString, IsNumber, IsUrl, IsBoolean, IsDate, Max, Min } from 'class-validator';
+import {
+  IsNotEmpty,
+  IsOptional,
+  IsString,
+  IsNumber,
+  IsUrl,
+  IsBoolean,
+  IsDate,
+  Max,
+  Min,
+} from 'class-validator';
 import { ApiProperty, ApiPropertyOptional } from '@nestjs/swagger';
-import { Type } from 'class-transformer';
 
 export class CreateOfferDto {
   @ApiProperty({
@@ -21,7 +30,6 @@ export class CreateOfferDto {
   @IsNumber()
   @Min(0)
   @Max(100)
-  @Type(() => Number)
   discountPercent: number;
 
   @ApiPropertyOptional({
@@ -46,7 +54,6 @@ export class CreateOfferDto {
   })
   @IsOptional()
   @IsDate()
-  @Type(() => Date)
   startDate?: Date;
 
   @ApiPropertyOptional({
@@ -55,7 +62,6 @@ export class CreateOfferDto {
   })
   @IsOptional()
   @IsDate()
-  @Type(() => Date)
   endDate?: Date;
 
   @ApiPropertyOptional({

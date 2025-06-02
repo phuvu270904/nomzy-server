@@ -20,10 +20,10 @@ export class OffersService {
     const now = new Date();
     return this.offerRepository.find({
       where: [
-        { 
-          isActive: true, 
-          startDate: IsNull(), 
-          endDate: IsNull() 
+        {
+          isActive: true,
+          startDate: IsNull(),
+          endDate: IsNull(),
         },
         {
           isActive: true,
@@ -51,11 +51,11 @@ export class OffersService {
     const offer = await this.offerRepository.findOne({
       where: { id },
     });
-    
+
     if (!offer) {
       throw new NotFoundException(`Offer with ID ${id} not found`);
     }
-    
+
     return offer;
   }
 
@@ -64,16 +64,19 @@ export class OffersService {
     return this.offerRepository.save(newOffer);
   }
 
-  async update(id: number, updateOfferDto: UpdateOfferDto): Promise<OfferEntity> {
+  async update(
+    id: number,
+    updateOfferDto: UpdateOfferDto,
+  ): Promise<OfferEntity> {
     const offer = await this.findOne(id);
-    
+
     const updatedOffer = Object.assign(offer, updateOfferDto);
     return this.offerRepository.save(updatedOffer);
   }
 
   async remove(id: number): Promise<void> {
     const result = await this.offerRepository.delete(id);
-    
+
     if (result.affected === 0) {
       throw new NotFoundException(`Offer with ID ${id} not found`);
     }

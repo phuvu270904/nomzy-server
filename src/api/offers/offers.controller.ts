@@ -13,7 +13,13 @@ import { OffersService } from './offers.service';
 import { CreateOfferDto } from './dto/create-offer.dto';
 import { UpdateOfferDto } from './dto/update-offer.dto';
 import { OfferEntity } from './entities/offer.entity';
-import { ApiTags, ApiOperation, ApiResponse, ApiParam, ApiBody } from '@nestjs/swagger';
+import {
+  ApiTags,
+  ApiOperation,
+  ApiResponse,
+  ApiParam,
+  ApiBody,
+} from '@nestjs/swagger';
 import { Public } from '../../common/decorators/public.decorator';
 import { Roles } from '../../roles/roles.decorator';
 import { Role } from '../../roles/role.enum';
@@ -70,9 +76,7 @@ export class OffersController {
     type: OfferEntity,
   })
   @Post()
-  async create(
-    @Body() createOfferDto: CreateOfferDto,
-  ): Promise<OfferEntity> {
+  async create(@Body() createOfferDto: CreateOfferDto): Promise<OfferEntity> {
     return this.offersService.create(createOfferDto);
   }
 
@@ -97,7 +101,10 @@ export class OffersController {
   @Roles(Role.ADMIN)
   @ApiOperation({ summary: 'Delete an offer' })
   @ApiParam({ name: 'id', description: 'Offer ID', type: 'number' })
-  @ApiResponse({ status: 204, description: 'The offer has been successfully deleted' })
+  @ApiResponse({
+    status: 204,
+    description: 'The offer has been successfully deleted',
+  })
   @ApiResponse({ status: 404, description: 'Offer not found' })
   @Delete(':id')
   @HttpCode(HttpStatus.NO_CONTENT)
