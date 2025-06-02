@@ -5,6 +5,7 @@ import { CategoriesModule } from './categories/categories.module';
 import { ProductsModule } from './products/products.module';
 import { NotificationsModule } from './notifications/notifications.module';
 import { UserNotificationsModule } from './user-notifications/user-notifications.module';
+import { OffersModule } from './offers/offers.module';
 
 @Module({
   imports: [
@@ -14,6 +15,7 @@ import { UserNotificationsModule } from './user-notifications/user-notifications
     ProductsModule,
     NotificationsModule,
     UserNotificationsModule,
+    OffersModule,
   ],
 })
 export class ApiModule {}
