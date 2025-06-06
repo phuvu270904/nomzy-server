@@ -13,8 +13,11 @@ import {
   UpdateDateColumn,
   JoinTable,
   ManyToMany,
+  ManyToOne,
+  OneToMany,
 } from 'typeorm';
 import { RoleEntity } from './role.entity';
+import { ProductEntity } from 'src/api/products/entities/product.entity';
 
 export enum Gender {
   MALE = 'male',
@@ -81,6 +84,9 @@ export class UserEntity {
   @IsOptional()
   @IsString()
   resetToken?: string;
+
+  @OneToMany('ProductEntity', 'restaurant', { cascade: true })
+  products?: ProductEntity[];
 
   @CreateDateColumn({ type: 'timestamp' })
   createdAt: Date;

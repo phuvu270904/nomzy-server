@@ -34,7 +34,7 @@ export class ProductEntity {
   @Column()
   restaurantId: number;
 
-  @ManyToOne(() => UserEntity)
+  @ManyToOne(() => UserEntity, { onDelete: 'CASCADE' })
   @JoinColumn({ name: 'restaurantId' })
   restaurant: UserEntity;
 
