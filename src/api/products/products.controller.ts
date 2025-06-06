@@ -25,6 +25,7 @@ import {
 import { Roles } from '../../roles/roles.decorator';
 import { Role } from '../../roles/role.enum';
 
+@ApiBearerAuth('access-token')
 @ApiTags('Products')
 @Controller('products')
 export class ProductsController {
@@ -59,7 +60,6 @@ export class ProductsController {
     status: 201,
     description: 'The product has been successfully created',
   })
-  @ApiBearerAuth('access-token')
   @Post()
   async create(
     @Request() req,
@@ -77,7 +77,6 @@ export class ProductsController {
     description: 'The product has been successfully updated',
   })
   @ApiResponse({ status: 404, description: 'Product not found' })
-  @ApiBearerAuth('access-token')
   @Put(':id')
   async update(
     @Param('id') id: number,
@@ -94,7 +93,6 @@ export class ProductsController {
     description: 'The product has been successfully deleted',
   })
   @ApiResponse({ status: 404, description: 'Product not found' })
-  @ApiBearerAuth('access-token')
   @Delete(':id')
   @HttpCode(HttpStatus.NO_CONTENT)
   async remove(@Param('id') id: number): Promise<void> {

@@ -24,6 +24,7 @@ import {
 import { Roles } from '../../roles/roles.decorator';
 import { Role } from '../../roles/role.enum';
 
+@ApiBearerAuth('access-token')
 @ApiTags('Categories')
 @Controller('categories')
 export class CategoriesController {
@@ -59,7 +60,6 @@ export class CategoriesController {
     description: 'The category has been successfully created',
     type: CategoryEntity,
   })
-  @ApiBearerAuth('access-token')
   @Post()
   async create(
     @Body() createCategoryDto: CreateCategoryDto,
@@ -77,7 +77,6 @@ export class CategoriesController {
     type: CategoryEntity,
   })
   @ApiResponse({ status: 404, description: 'Category not found' })
-  @ApiBearerAuth('access-token')
   @Put(':id')
   async update(
     @Param('id') id: number,
@@ -94,7 +93,6 @@ export class CategoriesController {
     description: 'The category has been successfully deleted',
   })
   @ApiResponse({ status: 404, description: 'Category not found' })
-  @ApiBearerAuth('access-token')
   @Delete(':id')
   @HttpCode(HttpStatus.NO_CONTENT)
   async remove(@Param('id') id: number): Promise<void> {

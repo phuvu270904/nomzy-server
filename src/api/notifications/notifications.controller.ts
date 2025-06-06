@@ -19,10 +19,12 @@ import {
   ApiResponse,
   ApiParam,
   ApiBody,
+  ApiBearerAuth,
 } from '@nestjs/swagger';
 import { Roles } from '../../roles/roles.decorator';
 import { Role } from '../../roles/role.enum';
 
+@ApiBearerAuth('access-token')
 @ApiTags('Notifications')
 @Controller('notifications')
 export class NotificationsController {
