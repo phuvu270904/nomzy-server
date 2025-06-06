@@ -52,6 +52,18 @@ export class CategoriesController {
     return this.categoriesService.findOne(id);
   }
 
+  @ApiOperation({ summary: 'Get products of a specific category' })
+  @ApiParam({ name: 'id', description: 'Category ID', type: 'number' })
+  @ApiResponse({
+    status: 200,
+    description: 'Return the category',
+  })
+  @ApiResponse({ status: 404, description: 'Category not found' })
+  @Get(':id/products')
+  async findOneProducts(@Param('id') id: number): Promise<CategoryEntity> {
+    return this.categoriesService.findOneProducts(id);
+  }
+
   @Roles(Role.ADMIN)
   @ApiOperation({ summary: 'Create a new category' })
   @ApiBody({ type: CreateCategoryDto })
