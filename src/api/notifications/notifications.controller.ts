@@ -20,7 +20,6 @@ import {
   ApiParam,
   ApiBody,
 } from '@nestjs/swagger';
-import { Public } from '../../common/decorators/public.decorator';
 import { Roles } from '../../roles/roles.decorator';
 import { Role } from '../../roles/role.enum';
 
@@ -29,7 +28,6 @@ import { Role } from '../../roles/role.enum';
 export class NotificationsController {
   constructor(private readonly notificationsService: NotificationsService) {}
 
-  @Public()
   @ApiOperation({ summary: 'Get all notifications' })
   @ApiResponse({
     status: 200,
@@ -41,7 +39,6 @@ export class NotificationsController {
     return this.notificationsService.findAll();
   }
 
-  @Public()
   @ApiOperation({ summary: 'Get a notification by ID' })
   @ApiParam({ name: 'id', description: 'Notification ID', type: 'number' })
   @ApiResponse({

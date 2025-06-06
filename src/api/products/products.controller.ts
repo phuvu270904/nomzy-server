@@ -22,7 +22,6 @@ import {
   ApiBody,
   ApiBearerAuth,
 } from '@nestjs/swagger';
-import { Public } from '../../common/decorators/public.decorator';
 import { Roles } from '../../roles/roles.decorator';
 import { Role } from '../../roles/role.enum';
 
@@ -31,7 +30,6 @@ import { Role } from '../../roles/role.enum';
 export class ProductsController {
   constructor(private readonly productsService: ProductsService) {}
 
-  @Public()
   @ApiOperation({ summary: 'Get all products' })
   @ApiResponse({
     status: 200,
@@ -42,7 +40,6 @@ export class ProductsController {
     return this.productsService.findAll();
   }
 
-  @Public()
   @ApiOperation({ summary: 'Get a product by ID' })
   @ApiParam({ name: 'id', description: 'Product ID', type: 'number' })
   @ApiResponse({

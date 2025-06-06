@@ -21,7 +21,6 @@ import {
   ApiBody,
   ApiBearerAuth,
 } from '@nestjs/swagger';
-import { Public } from '../../common/decorators/public.decorator';
 import { Roles } from '../../roles/roles.decorator';
 import { Role } from '../../roles/role.enum';
 
@@ -30,7 +29,6 @@ import { Role } from '../../roles/role.enum';
 export class CategoriesController {
   constructor(private readonly categoriesService: CategoriesService) {}
 
-  @Public()
   @ApiOperation({ summary: 'Get all categories' })
   @ApiResponse({
     status: 200,
@@ -41,7 +39,6 @@ export class CategoriesController {
     return this.categoriesService.findAll();
   }
 
-  @Public()
   @ApiOperation({ summary: 'Get a category by ID' })
   @ApiParam({ name: 'id', description: 'Category ID', type: 'number' })
   @ApiResponse({

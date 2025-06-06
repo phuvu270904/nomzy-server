@@ -20,7 +20,6 @@ import {
   ApiParam,
   ApiBody,
 } from '@nestjs/swagger';
-import { Public } from '../../common/decorators/public.decorator';
 import { Roles } from '../../roles/roles.decorator';
 import { Role } from '../../roles/role.enum';
 
@@ -29,7 +28,6 @@ import { Role } from '../../roles/role.enum';
 export class OffersController {
   constructor(private readonly offersService: OffersService) {}
 
-  @Public()
   @ApiOperation({ summary: 'Get all offers' })
   @ApiResponse({
     status: 200,
@@ -41,7 +39,6 @@ export class OffersController {
     return this.offersService.findAll();
   }
 
-  @Public()
   @ApiOperation({ summary: 'Get all active offers' })
   @ApiResponse({
     status: 200,
@@ -53,7 +50,6 @@ export class OffersController {
     return this.offersService.findActive();
   }
 
-  @Public()
   @ApiOperation({ summary: 'Get an offer by ID' })
   @ApiParam({ name: 'id', description: 'Offer ID', type: 'number' })
   @ApiResponse({
