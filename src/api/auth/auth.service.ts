@@ -29,9 +29,14 @@ export class AuthService {
       throw new NotFoundException({ status: 404, message: 'User not found' });
     }
     const { password, ...result } = userMatched;
+    const jwt = {
+      id: user.id,
+      email: user.email,
+      roles: user.roles,
+    };
 
     return {
-      jwt: user,
+      jwt,
       user: result,
     };
   }
