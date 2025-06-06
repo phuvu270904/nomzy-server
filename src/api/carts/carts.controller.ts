@@ -22,7 +22,10 @@ import {
   ApiBody,
   ApiBearerAuth,
 } from '@nestjs/swagger';
+import { Roles } from 'src/roles/roles.decorator';
+import { Role } from 'src/roles/role.enum';
 
+@Roles(Role.USER)
 @ApiTags('Carts')
 @ApiBearerAuth('access-token')
 @Controller('carts')
