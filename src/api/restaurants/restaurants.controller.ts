@@ -11,6 +11,11 @@ import { Role } from 'src/roles/role.enum';
 export class RestaurantsController {
   constructor(private readonly restaurantsService: RestaurantsService) {}
 
+  @Get()
+  async getAllRestaurants() {
+    return this.restaurantsService.getAllRestaurants();
+  }
+
   @Roles(Role.OWNER)
   @Get('info')
   async getRestaurantInfo(@Req() req): Promise<UserEntity> {

@@ -3,21 +3,12 @@ import { IsEmail, IsNotEmpty, IsString } from 'class-validator';
 export class CreateUserDto {
   @ApiProperty({
     example: 'John',
-    description: 'The first name of the user',
+    description: 'Name of the user',
     required: true,
   })
   @IsString()
   @IsNotEmpty()
-  first_name: string;
-
-  @ApiProperty({
-    example: 'Doe',
-    description: 'The last name of the user',
-    required: true,
-  })
-  @IsString()
-  @IsNotEmpty()
-  last_name: string;
+  name: string;
 
   @ApiProperty({
     example: 'john.doe@gmail.com',

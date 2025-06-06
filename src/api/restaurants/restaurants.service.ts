@@ -10,6 +10,32 @@ export class RestaurantsService {
     private readonly userRepository: Repository<UserEntity>,
   ) {}
 
+  async getAllRestaurants() {
+    const allUsers = await this.userRepository.find({
+      relations: ['products', 'roles'],
+    });
+
+    const restaurants = allUsers.filter((user) =>
+      user.roles.some((role) => role.name === 'owner'),
+    );
+
+    const restaurantInfos = restaurants.map((restaurant) => {
+      return {
+        id: restaurant.id,
+        name: restaurant.name,
+        email: restaurant.email,
+        phone_number: restaurant.phone_number,
+        products: restaurant.products,
+        address: restaurant.address,
+        city: restaurant.city,
+        country: restaurant.country,
+        avatar: restaurant.avatar,
+      };
+    });
+
+    return restaurantInfos;
+  }
+
   async getRestaurantInfo(restaurantId: number): Promise<UserEntity> {
     const restaurant = await this.userRepository.findOne({
       where: { id: restaurantId },

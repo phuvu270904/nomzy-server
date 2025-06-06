@@ -32,11 +32,7 @@ export class UserEntity {
 
   @Column({ type: 'varchar', length: 50 })
   @IsString()
-  first_name: string;
-
-  @Column({ type: 'varchar', length: 50 })
-  @IsString()
-  last_name: string;
+  name: string;
 
   @Column({ type: 'varchar', length: 50, nullable: true })
   @IsOptional()
