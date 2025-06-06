@@ -43,9 +43,19 @@ export class ProductsService {
   }
 
   async update(
+    restaurantId: number,
     id: number,
     updateProductDto: UpdateProductDto,
   ): Promise<ProductEntity> {
+    const productFound = await this.productRepository.findOneOrFail({
+      where: { id, restaurantId },
+      relations: ['category'],
+    });
+    if (!productFound) {
+      throw new NotFoundException(
+        `Product with ID ${id} of your restaurant not found`,
+      );
+    }
     await this.productRepository.update(id, updateProductDto);
     const updatedProduct = await this.productRepository.findOne({
       where: { id },
@@ -57,7 +67,15 @@ export class ProductsService {
     return updatedProduct;
   }
 
-  async remove(id: number): Promise<void> {
+  async remove(restaurantId: number, id: number): Promise<void> {
+    const productFound = await this.productRepository.findOne({
+      where: { id, restaurantId },
+    });
+    if (!productFound) {
+      throw new NotFoundException(
+        `Product with ID ${id} of your restaurant not found`,
+      );
+    }
     const result = await this.productRepository.delete(id);
 
     if (result.affected === 0) {

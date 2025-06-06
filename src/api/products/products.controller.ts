@@ -79,10 +79,11 @@ export class ProductsController {
   @ApiResponse({ status: 404, description: 'Product not found' })
   @Put(':id')
   async update(
+    @Request() req,
     @Param('id') id: number,
     @Body() updateProductDto: UpdateProductDto,
   ): Promise<ProductEntity> {
-    return this.productsService.update(id, updateProductDto);
+    return this.productsService.update(req.user.id, id, updateProductDto);
   }
 
   @Roles(Role.OWNER)
@@ -95,7 +96,7 @@ export class ProductsController {
   @ApiResponse({ status: 404, description: 'Product not found' })
   @Delete(':id')
   @HttpCode(HttpStatus.NO_CONTENT)
-  async remove(@Param('id') id: number): Promise<void> {
-    return this.productsService.remove(id);
+  async remove(@Request() req, @Param('id') id: number): Promise<void> {
+    return this.productsService.remove(req.user.id, id);
   }
 }

@@ -6,6 +6,7 @@ import { ProductsModule } from './products/products.module';
 import { NotificationsModule } from './notifications/notifications.module';
 import { UserNotificationsModule } from './user-notifications/user-notifications.module';
 import { OffersModule } from './offers/offers.module';
+import { RestaurantsModule } from './restaurants/restaurants.module';
 
 @Module({
   imports: [
@@ -16,6 +17,7 @@ import { OffersModule } from './offers/offers.module';
     NotificationsModule,
     UserNotificationsModule,
     OffersModule,
+    RestaurantsModule,
   ],
 })
 export class ApiModule {}
