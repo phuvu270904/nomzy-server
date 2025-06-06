@@ -45,21 +45,36 @@ export class AboutService {
     return this.aboutRepository.save(newAbout);
   }
 
-  async findOne(restaurantId: number): Promise<RestaurantAboutEntity> {
+  async findOne(restaurantId: number): Promise<any> {
     const about = await this.aboutRepository.findOne({
       where: { restaurantId },
+      relations: ['restaurant'],
     });
 
-    if (!about) {
-      const newAbout = this.aboutRepository.create({
-        restaurantId,
-        overview: '',
-        schedule: {},
-      });
-      return this.aboutRepository.save(newAbout);
-    }
+    const result =
+      about ??
+      (await this.aboutRepository.save(
+        this.aboutRepository.create({
+          restaurantId,
+          overview: '',
+          schedule: {},
+        }),
+      ));
 
-    return about;
+    // Strip sensitive info
+    const {
+      password,
+      refresh_token,
+      resetToken,
+      gender,
+      avatar,
+      ...safeRestaurant
+    } = result.restaurant;
+
+    return {
+      ...result,
+      restaurant: safeRestaurant,
+    };
   }
 
   async update(

@@ -36,7 +36,7 @@ export class RestaurantsService {
     return restaurantInfos;
   }
 
-  async getRestaurantInfo(restaurantId: number): Promise<UserEntity> {
+  async getRestaurantInfo(restaurantId: number) {
     const restaurant = await this.userRepository.findOne({
       where: { id: restaurantId },
       relations: ['products'],
@@ -46,6 +46,9 @@ export class RestaurantsService {
       throw new Error('Restaurant not found');
     }
 
-    return restaurant;
+    const { password, gender, refresh_token, resetToken, ...safeInfo } =
+      restaurant;
+
+    return safeInfo;
   }
 }

@@ -13,7 +13,7 @@ export class RestaurantAboutEntity {
   id: number;
 
   @OneToOne(() => UserEntity)
-  @JoinColumn()
+  @JoinColumn({ name: 'restaurantId' })
   restaurant: UserEntity;
 
   @Column({ type: 'int', nullable: true })

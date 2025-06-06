@@ -18,7 +18,7 @@ export class RestaurantsController {
 
   @Roles(Role.OWNER)
   @Get('info')
-  async getRestaurantInfo(@Req() req): Promise<UserEntity> {
+  async getRestaurantInfo(@Req() req) {
     return this.restaurantsService.getRestaurantInfo(req.user.id);
   }
 }
