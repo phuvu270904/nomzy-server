@@ -14,7 +14,9 @@ import { UpdateCouponSentDto } from './dto/update-coupon-sent.dto';
 import { CouponsService } from '../coupons/coupons.service';
 import { UsersService } from '../users/users.service';
 import { UserCouponsService } from '../user-coupons/user-coupons.service';
+import { RestaurantCouponsService } from '../restaurant-coupons/restaurant-coupons.service';
 import { ClaimCouponDto } from '../user-coupons/dto/claim-coupon.dto';
+import { CreateRestaurantCouponDto } from '../restaurant-coupons/dto/create-restaurant-coupon.dto';
 import { Role } from 'src/roles/role.enum';
 
 @Injectable()
@@ -25,6 +27,7 @@ export class CouponSentService {
     private readonly couponsService: CouponsService,
     private readonly usersService: UsersService,
     private readonly userCouponsService: UserCouponsService,
+    private readonly restaurantCouponsService: RestaurantCouponsService,
   ) {}
 
   async create(
@@ -34,6 +37,12 @@ export class CouponSentService {
     const coupon = await this.couponsService.findOne(
       createCouponSentDto.couponId,
     );
+
+    if (!coupon) {
+      throw new NotFoundException(
+        `Coupon with ID ${createCouponSentDto.couponId} not found`,
+      );
+    }
 
     // Validation for sentToUserId based on sentType
     if (
@@ -144,8 +153,13 @@ export class CouponSentService {
     const restaurants = await this.usersService.findAllRestaurants();
     for (const restaurant of restaurants) {
       try {
-        const claimDto: ClaimCouponDto = { couponId };
-        await this.userCouponsService.claimCoupon(restaurant.id, claimDto);
+        const createRestaurantCouponDto: CreateRestaurantCouponDto = {
+          couponId,
+        };
+        await this.restaurantCouponsService.create(
+          restaurant.id,
+          createRestaurantCouponDto,
+        );
       } catch (error) {
         // Log error but continue with other restaurants
         console.error(
@@ -167,8 +181,11 @@ export class CouponSentService {
     restaurantId: number,
     couponId: number,
   ): Promise<void> {
-    const claimDto: ClaimCouponDto = { couponId };
-    await this.userCouponsService.claimCoupon(restaurantId, claimDto);
+    const createRestaurantCouponDto: CreateRestaurantCouponDto = { couponId };
+    await this.restaurantCouponsService.create(
+      restaurantId,
+      createRestaurantCouponDto,
+    );
   }
 
   async findAll(): Promise<CouponSentEntity[]> {

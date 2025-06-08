@@ -6,6 +6,7 @@ import { CouponSentEntity } from './entities/coupon-sent.entity';
 import { CouponsModule } from '../coupons/coupons.module';
 import { UsersModule } from '../users/users.module';
 import { UserCouponsModule } from '../user-coupons/user-coupons.module';
+import { RestaurantCouponsModule } from '../restaurant-coupons/restaurant-coupons.module';
 
 @Module({
   imports: [
@@ -13,6 +14,7 @@ import { UserCouponsModule } from '../user-coupons/user-coupons.module';
     CouponsModule,
     UsersModule,
     UserCouponsModule,
+    RestaurantCouponsModule,
   ],
   controllers: [CouponSentController],
   providers: [CouponSentService],
