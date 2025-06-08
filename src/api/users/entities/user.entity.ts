@@ -18,6 +18,7 @@ import {
 } from 'typeorm';
 import { RoleEntity } from './role.entity';
 import { ProductEntity } from 'src/api/products/entities/product.entity';
+import { AddressEntity } from 'src/api/addresses/entities/address.entity';
 
 export enum Gender {
   MALE = 'male',
@@ -51,17 +52,8 @@ export class UserEntity {
   @IsPhoneNumber()
   phone_number: string;
 
-  @Column({ type: 'text', nullable: true })
-  @IsOptional()
-  address?: string;
-
-  @Column({ type: 'varchar', length: 255, nullable: true })
-  @IsOptional()
-  city?: string;
-
-  @Column({ type: 'varchar', length: 255, nullable: true })
-  @IsOptional()
-  country?: string;
+  @OneToMany(() => AddressEntity, (address) => address.user, { cascade: true })
+  addresses: AddressEntity[];
 
   @Column({ type: 'text', nullable: true })
   @IsOptional()

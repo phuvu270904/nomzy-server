@@ -10,6 +10,7 @@ import { RestaurantsModule } from './restaurants/restaurants.module';
 import { CartsModule } from './carts/carts.module';
 import { AboutModule } from './about/about.module';
 import { FeedbacksModule } from './feedbacks/feedbacks.module';
+import { AddressesModule } from './addresses/addresses.module';
 
 @Module({
   imports: [
@@ -24,6 +25,7 @@ import { FeedbacksModule } from './feedbacks/feedbacks.module';
     CartsModule,
     AboutModule,
     FeedbacksModule,
+    AddressesModule,
   ],
 })
 export class ApiModule {}

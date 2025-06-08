@@ -12,7 +12,7 @@ export class RestaurantsService {
 
   async getAllRestaurants() {
     const allUsers = await this.userRepository.find({
-      relations: ['products', 'roles'],
+      relations: ['products', 'roles', 'addresses'],
     });
 
     const restaurants = allUsers.filter((user) =>
@@ -26,9 +26,7 @@ export class RestaurantsService {
         email: restaurant.email,
         phone_number: restaurant.phone_number,
         products: restaurant.products,
-        address: restaurant.address,
-        city: restaurant.city,
-        country: restaurant.country,
+        addresses: restaurant.addresses,
         avatar: restaurant.avatar,
       };
     });
@@ -39,7 +37,7 @@ export class RestaurantsService {
   async getRestaurantInfo(restaurantId: number) {
     const restaurant = await this.userRepository.findOne({
       where: { id: restaurantId },
-      relations: ['products'],
+      relations: ['products', 'addresses'],
     });
 
     if (!restaurant) {
