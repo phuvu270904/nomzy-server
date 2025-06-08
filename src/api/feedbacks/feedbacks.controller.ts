@@ -6,7 +6,6 @@ import {
   Patch,
   Param,
   Delete,
-  UseGuards,
   Req,
   ParseIntPipe,
 } from '@nestjs/common';
@@ -29,6 +28,7 @@ import { FeedbackResponseDto } from './dto/feedback-response.dto';
 export class FeedbacksController {
   constructor(private readonly feedbacksService: FeedbacksService) {}
 
+  @Roles(Role.USER)
   @Post('restaurant/:restaurantId')
   @ApiBearerAuth('access-token')
   @ApiOperation({ summary: 'Create a new feedback for a restaurant' })
@@ -109,6 +109,7 @@ export class FeedbacksController {
     return this.feedbacksService.findOne(id);
   }
 
+  @Roles(Role.USER)
   @Patch(':id')
   @ApiBearerAuth('access-token')
   @ApiOperation({ summary: 'Update a feedback' })
@@ -126,6 +127,7 @@ export class FeedbacksController {
     return this.feedbacksService.update(id, req.user.id, updateFeedbackDto);
   }
 
+  @Roles(Role.USER, Role.ADMIN)
   @Delete(':id')
   @ApiBearerAuth('access-token')
   @ApiOperation({ summary: 'Delete a feedback' })
