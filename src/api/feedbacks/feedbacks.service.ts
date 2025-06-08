@@ -40,20 +40,6 @@ export class FeedbacksService {
       throw new BadRequestException('You cannot review your own restaurant');
     }
 
-    // Check if user has already reviewed this restaurant
-    const existingReview = await this.feedbackRepository.findOne({
-      where: {
-        userId,
-        restaurantId,
-      },
-    });
-
-    if (existingReview) {
-      throw new BadRequestException(
-        'You have already reviewed this restaurant',
-      );
-    }
-
     // Create new feedback
     const feedback = this.feedbackRepository.create({
       userId,
