@@ -7,6 +7,7 @@ import { Roles } from 'src/roles/roles.decorator';
 import { Role } from 'src/roles/role.enum';
 
 @ApiBearerAuth('access-token')
+@Roles(Role.USER)
 @ApiTags('User Coupons')
 @Controller('user-coupons')
 export class UserCouponsController {
@@ -42,7 +43,6 @@ export class UserCouponsController {
   }
 
   @Put(':id/expire')
-  @Roles(Role.ADMIN)
   async markAsExpired(@Param('id') id: number) {
     return this.userCouponsService.markAsExpired(id);
   }
