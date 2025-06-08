@@ -96,4 +96,26 @@ export class UsersService {
     await this.userRepository.update(id, { refresh_token: refreshToken });
     return this.userRepository.findOne({ where: { id } });
   }
+
+  async findAllUsers(): Promise<UserEntity[]> {
+    const allUsers = await this.userRepository.find({
+      relations: ['roles'],
+    });
+
+    // Filter to only include regular users (not owners/restaurants)
+    return allUsers.filter((user) =>
+      user.roles.every((role) => role.name !== 'owner'),
+    );
+  }
+
+  async findAllRestaurants(): Promise<UserEntity[]> {
+    const allUsers = await this.userRepository.find({
+      relations: ['roles'],
+    });
+
+    // Filter to only include restaurants (users with owner role)
+    return allUsers.filter((user) =>
+      user.roles.some((role) => role.name === 'owner'),
+    );
+  }
 }

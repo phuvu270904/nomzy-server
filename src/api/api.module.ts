@@ -11,6 +11,10 @@ import { CartsModule } from './carts/carts.module';
 import { AboutModule } from './about/about.module';
 import { FeedbacksModule } from './feedbacks/feedbacks.module';
 import { AddressesModule } from './addresses/addresses.module';
+import { CouponsModule } from './coupons/coupons.module';
+import { RestaurantCouponsModule } from './restaurant-coupons/restaurant-coupons.module';
+import { UserCouponsModule } from './user-coupons/user-coupons.module';
+import { CouponSentModule } from './coupon-sent/coupon-sent.module';
 
 @Module({
   imports: [
@@ -26,6 +30,10 @@ import { AddressesModule } from './addresses/addresses.module';
     AboutModule,
     FeedbacksModule,
     AddressesModule,
+    CouponsModule,
+    RestaurantCouponsModule,
+    UserCouponsModule,
+    CouponSentModule,
   ],
 })
 export class ApiModule {}
