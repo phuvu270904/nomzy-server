@@ -7,6 +7,7 @@ import {
   Delete,
   Req,
   UseGuards,
+  Param,
 } from '@nestjs/common';
 import { AboutService } from './about.service';
 import { CreateAboutDto } from './dto/create-about.dto';
@@ -15,7 +16,6 @@ import { ApiBearerAuth, ApiOperation, ApiTags } from '@nestjs/swagger';
 import { RestaurantAboutEntity } from './entities/restaurant-about.entity';
 import { Roles } from 'src/roles/roles.decorator';
 import { Role } from 'src/roles/role.enum';
-import { RolesGuard } from 'src/roles/roles.guard';
 
 @ApiBearerAuth('access-token')
 @ApiTags('Restaurant About')
@@ -42,9 +42,9 @@ export class AboutController {
 
   @Get(':id')
   @ApiOperation({ summary: 'Get restaurant information by ID' })
-  async findOne(@Req() req): Promise<RestaurantAboutEntity> {
+  async findOne(@Param('id') id: number): Promise<RestaurantAboutEntity> {
     // For public access (no authentication required)
-    const restaurantId = req.params.id;
+    const restaurantId = id;
     return this.aboutService.findOne(restaurantId);
   }
 
