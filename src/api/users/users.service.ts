@@ -104,7 +104,7 @@ export class UsersService {
 
     // Filter to only include regular users (not owners/restaurants)
     return allUsers.filter((user) =>
-      user.roles.every((role) => role.name !== 'owner'),
+      user.roles.some((role) => role.name == 'user'),
     );
   }
 

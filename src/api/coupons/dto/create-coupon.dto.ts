@@ -64,11 +64,6 @@ export class CreateCouponDto {
   @IsOptional()
   isGlobal: boolean;
 
-  @ApiProperty({ example: 1 })
-  @IsNumber()
-  @IsOptional()
-  restaurantId?: number;
-
   @ApiProperty({ example: 100 })
   @IsNumber()
   @IsOptional()

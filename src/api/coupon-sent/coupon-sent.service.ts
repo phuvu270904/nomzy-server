@@ -216,18 +216,6 @@ export class CouponSentService {
     return this.couponSentRepository.save(couponSent);
   }
 
-  async incrementClaimedCount(id: number): Promise<CouponSentEntity> {
-    const couponSent = await this.findOne(id);
-    couponSent.claimedCount += 1;
-    return this.couponSentRepository.save(couponSent);
-  }
-
-  async incrementUsedCount(id: number): Promise<CouponSentEntity> {
-    const couponSent = await this.findOne(id);
-    couponSent.usedCount += 1;
-    return this.couponSentRepository.save(couponSent);
-  }
-
   async remove(id: number): Promise<void> {
     const couponSent = await this.findOne(id);
     await this.couponSentRepository.remove(couponSent);

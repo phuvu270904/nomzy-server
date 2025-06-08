@@ -42,12 +42,6 @@ export class CouponSentEntity {
   })
   sentType: CouponSentType;
 
-  @Column({ default: 0 })
-  claimedCount: number;
-
-  @Column({ default: 0 })
-  usedCount: number;
-
   @CreateDateColumn()
   createdAt: Date;
 
