@@ -15,6 +15,7 @@ import { CouponsModule } from './coupons/coupons.module';
 import { RestaurantCouponsModule } from './restaurant-coupons/restaurant-coupons.module';
 import { UserCouponsModule } from './user-coupons/user-coupons.module';
 import { CouponSentModule } from './coupon-sent/coupon-sent.module';
+import { DriverReviewsModule } from './driver-reviews/driver-reviews.module';
 
 @Module({
   imports: [
@@ -34,6 +35,7 @@ import { CouponSentModule } from './coupon-sent/coupon-sent.module';
     RestaurantCouponsModule,
     UserCouponsModule,
     CouponSentModule,
+    DriverReviewsModule,
   ],
 })
 export class ApiModule {}
