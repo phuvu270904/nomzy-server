@@ -31,7 +31,7 @@ export class DriverReviewEntity {
   @Column('int')
   rating: number;
 
-  @Column('text')
+  @Column({ type: 'text', nullable: true })
   review: string;
 
   @Column({ default: false })

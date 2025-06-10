@@ -26,8 +26,8 @@ export class CreateDriverReviewDto {
       'Very professional and delivered the food quickly and in great condition.',
   })
   @IsString()
-  @IsNotEmpty()
-  review: string;
+  @IsOptional()
+  review?: string;
 
   @ApiProperty({
     description: 'Whether the review should be posted anonymously',
