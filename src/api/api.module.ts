@@ -6,6 +6,7 @@ import { ProductsModule } from './products/products.module';
 import { NotificationsModule } from './notifications/notifications.module';
 import { UserNotificationsModule } from './user-notifications/user-notifications.module';
 import { NotificationSentModule } from './notification-sent/notification-sent.module';
+import { UserNotificationSettingsModule } from './user-notification-settings/user-notification-settings.module';
 import { OffersModule } from './offers/offers.module';
 import { RestaurantsModule } from './restaurants/restaurants.module';
 import { CartsModule } from './carts/carts.module';
@@ -28,6 +29,7 @@ import { FavoritesModule } from './favorites/favorites.module';
     NotificationsModule,
     UserNotificationsModule,
     NotificationSentModule,
+    UserNotificationSettingsModule,
     OffersModule,
     RestaurantsModule,
     CartsModule,
