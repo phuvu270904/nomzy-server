@@ -5,6 +5,7 @@ import { CategoriesModule } from './categories/categories.module';
 import { ProductsModule } from './products/products.module';
 import { NotificationsModule } from './notifications/notifications.module';
 import { UserNotificationsModule } from './user-notifications/user-notifications.module';
+import { NotificationSentModule } from './notification-sent/notification-sent.module';
 import { OffersModule } from './offers/offers.module';
 import { RestaurantsModule } from './restaurants/restaurants.module';
 import { CartsModule } from './carts/carts.module';
@@ -26,6 +27,7 @@ import { FavoritesModule } from './favorites/favorites.module';
     ProductsModule,
     NotificationsModule,
     UserNotificationsModule,
+    NotificationSentModule,
     OffersModule,
     RestaurantsModule,
     CartsModule,
