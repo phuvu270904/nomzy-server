@@ -1,6 +1,6 @@
 import { Injectable } from '@nestjs/common';
 import { InjectRepository } from '@nestjs/typeorm';
-import { UserEntity } from '../users/entities/user.entity';
+import { UserEntity, UserRole } from '../users/entities/user.entity';
 import { Repository } from 'typeorm';
 
 @Injectable()
@@ -15,9 +15,7 @@ export class RestaurantsService {
       relations: ['products', 'roles', 'addresses'],
     });
 
-    const restaurants = allUsers.filter((user) =>
-      user.roles.some((role) => role.name === 'owner'),
-    );
+    const restaurants = allUsers.filter((user) => user.role === UserRole.OWNER);
 
     const restaurantInfos = restaurants.map((restaurant) => {
       return {

@@ -9,7 +9,7 @@ import { Repository } from 'typeorm';
 import { DriverReviewEntity } from './entities/driver-review.entity';
 import { CreateDriverReviewDto } from './dto/create-driver-review.dto';
 import { UpdateDriverReviewDto } from './dto/update-driver-review.dto';
-import { UserEntity } from '../users/entities/user.entity';
+import { UserEntity, UserRole } from '../users/entities/user.entity';
 import { DriverReviewResponseDto } from './dto/driver-review-response.dto';
 import { Role } from 'src/roles/role.enum';
 
@@ -30,17 +30,13 @@ export class DriverReviewsService {
     // Check if driver exists and is actually a driver (has driver role)
     const driver = await this.userRepository.findOne({
       where: { id: driverId },
-      relations: ['roles'],
     });
 
     if (!driver) {
       throw new NotFoundException('Driver not found');
     }
 
-    const hasDriverRole = driver.roles.some(
-      // eslint-disable-next-line @typescript-eslint/no-unsafe-enum-comparison
-      (role) => role.name === Role.DRIVER,
-    );
+    const hasDriverRole = driver.role === UserRole.DRIVER;
     if (!hasDriverRole) {
       throw new BadRequestException('The specified user is not a driver');
     }
@@ -74,17 +70,13 @@ export class DriverReviewsService {
   async findByDriver(driverId: number): Promise<DriverReviewResponseDto[]> {
     const driver = await this.userRepository.findOne({
       where: { id: driverId },
-      relations: ['roles'],
     });
 
     if (!driver) {
       throw new NotFoundException('Driver not found');
     }
 
-    const hasDriverRole = driver.roles.some(
-      // eslint-disable-next-line @typescript-eslint/no-unsafe-enum-comparison
-      (role) => role.name === Role.DRIVER,
-    );
+    const hasDriverRole = driver.role === UserRole.DRIVER;
     if (!hasDriverRole) {
       throw new BadRequestException('The specified user is not a driver');
     }

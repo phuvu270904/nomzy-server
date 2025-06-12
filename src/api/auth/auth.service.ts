@@ -24,7 +24,7 @@ export class AuthService {
   ) {}
 
   async profile(user: any) {
-    const userMatched = await this.usersService.findWithRoles(user.id);
+    const userMatched = await this.usersService.findOne(user.id);
     if (!userMatched) {
       throw new NotFoundException({ status: 404, message: 'User not found' });
     }
@@ -32,7 +32,7 @@ export class AuthService {
     const jwt = {
       id: user.id,
       email: user.email,
-      roles: user.roles,
+      role: user.role,
     };
 
     return {
@@ -57,9 +57,9 @@ export class AuthService {
       });
     }
 
-    const roleName = user.roles.map((role) => role.name);
+    const role = user.role;
 
-    const payload = { id: user.id, email: user.email, roles: roleName };
+    const payload = { id: user.id, email: user.email, role };
 
     const accessToken = this.jwtService.sign(payload, {
       secret: process.env.JWT_SECRET,

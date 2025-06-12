@@ -18,6 +18,7 @@ import { RestaurantCouponsService } from '../restaurant-coupons/restaurant-coupo
 import { ClaimCouponDto } from '../user-coupons/dto/claim-coupon.dto';
 import { CreateRestaurantCouponDto } from '../restaurant-coupons/dto/create-restaurant-coupon.dto';
 import { Role } from 'src/roles/role.enum';
+import { UserRole } from '../users/entities/user.entity';
 
 @Injectable()
 export class CouponSentService {
@@ -70,8 +71,7 @@ export class CouponSentService {
       // For restaurant type, verify user is a restaurant
       if (
         createCouponSentDto.sentType === CouponSentType.INDIVIDUAL_RESTAURANT &&
-        // eslint-disable-next-line @typescript-eslint/no-unsafe-enum-comparison
-        !user.roles.some((role) => role.name === Role.OWNER)
+        user.role !== UserRole.OWNER
       ) {
         throw new BadRequestException(
           `User with ID ${createCouponSentDto.sentToUserId} is not a restaurant`,
@@ -81,8 +81,7 @@ export class CouponSentService {
       // For user type, verify user is not a restaurant
       if (
         createCouponSentDto.sentType === CouponSentType.INDIVIDUAL_USER &&
-        // eslint-disable-next-line @typescript-eslint/no-unsafe-enum-comparison
-        user.roles.some((role) => role.name === Role.OWNER)
+        user.role === UserRole.OWNER
       ) {
         throw new BadRequestException(
           `User with ID ${createCouponSentDto.sentToUserId} is a restaurant, not a regular user`,

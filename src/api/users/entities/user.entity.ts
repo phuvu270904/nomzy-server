@@ -1,5 +1,6 @@
 import {
   IsEmail,
+  IsEnum,
   IsOptional,
   IsPhoneNumber,
   IsString,
@@ -11,12 +12,8 @@ import {
   Column,
   CreateDateColumn,
   UpdateDateColumn,
-  JoinTable,
-  ManyToMany,
-  ManyToOne,
   OneToMany,
 } from 'typeorm';
-import { RoleEntity } from './role.entity';
 import { ProductEntity } from 'src/api/products/entities/product.entity';
 import { AddressEntity } from 'src/api/addresses/entities/address.entity';
 
@@ -24,6 +21,13 @@ export enum Gender {
   MALE = 'male',
   FEMALE = 'female',
   OTHER = 'other',
+}
+
+export enum UserRole {
+  ADMIN = 'admin',
+  OWNER = 'owner',
+  DRIVER = 'driver',
+  USER = 'user',
 }
 
 @Entity('users')
@@ -59,9 +63,9 @@ export class UserEntity {
   @IsOptional()
   avatar?: string;
 
-  @ManyToMany(() => RoleEntity)
-  @JoinTable()
-  roles: RoleEntity[];
+  @Column({ type: 'enum', enum: UserRole })
+  @IsEnum(UserRole)
+  role: UserRole;
 
   @Column({ type: 'varchar', length: 255, nullable: true })
   @IsOptional()

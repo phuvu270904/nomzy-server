@@ -6,7 +6,7 @@ import {
 import { InjectRepository } from '@nestjs/typeorm';
 import { Repository } from 'typeorm';
 import { FavoriteEntity } from './entities/favorite.entity';
-import { UserEntity } from '../users/entities/user.entity';
+import { UserEntity, UserRole } from '../users/entities/user.entity';
 import { CreateFavoriteDto } from './dto/create-favorite.dto';
 import { FavoriteResponseDto } from './dto/favorite-response.dto';
 import { Role } from 'src/roles/role.enum';
@@ -29,14 +29,13 @@ export class FavoritesService {
     // Check if restaurant exists and is a restaurant (owner role)
     const restaurant = await this.userRepository.findOne({
       where: { id: restaurantId },
-      relations: ['roles'],
     });
 
     if (!restaurant) {
       throw new NotFoundException('Restaurant not found');
     }
 
-    const isRestaurant = restaurant.roles.some((role) => role.name === 'owner');
+    const isRestaurant = restaurant.role === UserRole.OWNER;
     if (!isRestaurant) {
       throw new BadRequestException('Selected user is not a restaurant');
     }

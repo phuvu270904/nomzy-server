@@ -1,19 +1,16 @@
 import { Injectable } from '@nestjs/common';
-import { UserEntity } from './entities/user.entity';
+import { UserEntity, UserRole } from './entities/user.entity';
 import { InjectRepository } from '@nestjs/typeorm';
 import { In, Repository } from 'typeorm';
 import { CreateUserDto } from './dto/createUser.dto';
 import { UpdateUserDto } from './dto/updateUser.dto';
 import * as bcrypt from 'bcrypt';
-import { RoleEntity } from './entities/role.entity';
 
 @Injectable()
 export class UsersService {
   constructor(
     @InjectRepository(UserEntity)
     private readonly userRepository: Repository<UserEntity>,
-    @InjectRepository(RoleEntity)
-    private readonly roleRepository: Repository<RoleEntity>,
   ) {}
 
   async findAll(): Promise<any[]> {
@@ -27,7 +24,6 @@ export class UsersService {
   async findOneByEmail(email: string): Promise<UserEntity | null> {
     return this.userRepository.findOne({
       where: { email },
-      relations: ['roles'],
     });
   }
 
@@ -38,27 +34,20 @@ export class UsersService {
   async findWithRoles(id: number): Promise<UserEntity | null> {
     return this.userRepository.findOne({
       where: { id },
-      relations: ['roles'],
     });
   }
 
   async findByEmail(email: string): Promise<UserEntity | null> {
     return this.userRepository.findOne({ where: { email } });
   }
-
+  
   async create(user: CreateUserDto): Promise<CreateUserDto> {
     const hashedPassword = await bcrypt.hash(user.password, 10);
-
-    const userRoleRegistered = await this.roleRepository.find({
-      where: {
-        name: user.role,
-      },
-    });
 
     const newUser = {
       ...user,
       password: hashedPassword,
-      roles: userRoleRegistered,
+      role: user.role as UserRole,
     };
 
     return this.userRepository.save(newUser);
@@ -98,24 +87,16 @@ export class UsersService {
   }
 
   async findAllUsers(): Promise<UserEntity[]> {
-    const allUsers = await this.userRepository.find({
-      relations: ['roles'],
-    });
+    const allUsers = await this.userRepository.find();
 
     // Filter to only include regular users (not owners/restaurants)
-    return allUsers.filter((user) =>
-      user.roles.some((role) => role.name == 'user'),
-    );
+    return allUsers.filter((user) => user.role === UserRole.USER);
   }
 
   async findAllRestaurants(): Promise<UserEntity[]> {
-    const allUsers = await this.userRepository.find({
-      relations: ['roles'],
-    });
+    const allUsers = await this.userRepository.find();
 
     // Filter to only include restaurants (users with owner role)
-    return allUsers.filter((user) =>
-      user.roles.some((role) => role.name === 'owner'),
-    );
+    return allUsers.filter((user) => user.role === UserRole.OWNER);
   }
 }
