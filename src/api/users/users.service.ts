@@ -28,7 +28,10 @@ export class UsersService {
   }
 
   async findOne(id: number): Promise<UserEntity | null> {
-    return this.userRepository.findOne({ where: { id } });
+    return this.userRepository.findOne({
+      where: { id },
+      relations: ['addresses'],
+    });
   }
 
   async findWithRoles(id: number): Promise<UserEntity | null> {
@@ -40,7 +43,7 @@ export class UsersService {
   async findByEmail(email: string): Promise<UserEntity | null> {
     return this.userRepository.findOne({ where: { email } });
   }
-  
+
   async create(user: CreateUserDto): Promise<CreateUserDto> {
     const hashedPassword = await bcrypt.hash(user.password, 10);
 

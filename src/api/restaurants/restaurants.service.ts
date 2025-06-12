@@ -12,7 +12,7 @@ export class RestaurantsService {
 
   async getAllRestaurants() {
     const allUsers = await this.userRepository.find({
-      relations: ['products', 'roles', 'addresses'],
+      relations: ['products', 'addresses'],
     });
 
     const restaurants = allUsers.filter((user) => user.role === UserRole.OWNER);

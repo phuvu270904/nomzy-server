@@ -71,7 +71,7 @@ export class CouponSentService {
       // For restaurant type, verify user is a restaurant
       if (
         createCouponSentDto.sentType === CouponSentType.INDIVIDUAL_RESTAURANT &&
-        user.role !== UserRole.OWNER
+        user.role === UserRole.OWNER
       ) {
         throw new BadRequestException(
           `User with ID ${createCouponSentDto.sentToUserId} is not a restaurant`,
@@ -81,7 +81,7 @@ export class CouponSentService {
       // For user type, verify user is not a restaurant
       if (
         createCouponSentDto.sentType === CouponSentType.INDIVIDUAL_USER &&
-        user.role === UserRole.OWNER
+        user.role !== UserRole.OWNER
       ) {
         throw new BadRequestException(
           `User with ID ${createCouponSentDto.sentToUserId} is a restaurant, not a regular user`,
