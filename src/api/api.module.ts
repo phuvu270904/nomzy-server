@@ -20,6 +20,7 @@ import { CouponSentModule } from './coupon-sent/coupon-sent.module';
 import { DriverReviewsModule } from './driver-reviews/driver-reviews.module';
 import { FavoritesModule } from './favorites/favorites.module';
 import { FaqsModule } from './faqs/faqs.module';
+import { OrdersModule } from './orders/orders.module';
 
 @Module({
   imports: [
@@ -44,6 +45,7 @@ import { FaqsModule } from './faqs/faqs.module';
     DriverReviewsModule,
     FavoritesModule,
     FaqsModule,
+    OrdersModule,
   ],
 })
 export class ApiModule {}
