@@ -27,6 +27,30 @@ export class UsersService {
     });
   }
 
+  async findAdminByEmail(email: string): Promise<UserEntity | null> {
+    return this.userRepository.findOne({
+      where: { email, role: UserRole.ADMIN },
+    });
+  }
+
+  async findUserByEmail(email: string): Promise<UserEntity | null> {
+    return this.userRepository.findOne({
+      where: { email, role: UserRole.USER },
+    });
+  }
+
+  async findDriverByEmail(email: string): Promise<UserEntity | null> {
+    return this.userRepository.findOne({
+      where: { email, role: UserRole.DRIVER },
+    });
+  }
+
+  async findOwnerByEmail(email: string): Promise<UserEntity | null> {
+    return this.userRepository.findOne({
+      where: { email, role: UserRole.OWNER },
+    });
+  }
+
   async findOne(id: number): Promise<UserEntity | null> {
     return this.userRepository.findOne({
       where: { id },

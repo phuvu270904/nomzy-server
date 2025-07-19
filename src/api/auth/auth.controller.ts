@@ -30,12 +30,36 @@ export class AuthController {
     return this.authService.profile(req.user);
   }
 
-  @ApiOperation({ summary: 'Login' })
+  @ApiOperation({ summary: 'Login Admin' })
   @ApiBody({ type: LoginDto })
   @Public()
-  @Post('login')
-  async login(@Body() loginDto: LoginDto) {
-    return this.authService.login(loginDto);
+  @Post('login/admin')
+  async adminLogin(@Body() loginDto: LoginDto) {
+    return this.authService.adminLogin(loginDto);
+  }
+
+  @ApiOperation({ summary: 'Login User' })
+  @ApiBody({ type: LoginDto })
+  @Public()
+  @Post('login/user')
+  async userLogin(@Body() loginDto: LoginDto) {
+    return this.authService.userLogin(loginDto);
+  }
+
+  @ApiOperation({ summary: 'Login Driver' })
+  @ApiBody({ type: LoginDto })
+  @Public()
+  @Post('login/driver')
+  async driverLogin(@Body() loginDto: LoginDto) {
+    return this.authService.driverLogin(loginDto);
+  }
+
+  @ApiOperation({ summary: 'Login Owner' })
+  @ApiBody({ type: LoginDto })
+  @Public()
+  @Post('login/owner')
+  async ownerLogin(@Body() loginDto: LoginDto) {
+    return this.authService.ownerLogin(loginDto);
   }
 
   @ApiOperation({ summary: 'Register user account' })

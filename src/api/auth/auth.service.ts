@@ -41,9 +41,41 @@ export class AuthService {
     };
   }
 
-  async login(loginDto: LoginDto) {
+  async adminLogin(loginDto: LoginDto) {
     const { email, password } = loginDto;
-    const user = await this.usersService.findOneByEmail(email);
+    const user = await this.usersService.findAdminByEmail(email);
+
+    if (!user) {
+      throw new NotFoundException({ status: 404, message: 'Admin not found' });
+    }
+
+    const isMatch = await bcrypt.compare(password, user.password);
+    if (!isMatch) {
+      throw new UnauthorizedException({
+        status: 401,
+        message: 'Incorrect email or password',
+      });
+    }
+
+    const role = user.role;
+
+    const payload = { id: user.id, email: user.email, role };
+
+    const { accessToken, refreshToken } = await this.generateTokens(payload);
+
+    await this.usersService.updateRefreshToken(user.id, refreshToken);
+
+    return {
+      status: 200,
+      message: 'Login successful',
+      jwt: accessToken,
+      refresh: refreshToken,
+    };
+  }
+
+  async userLogin(loginDto: LoginDto) {
+    const { email, password } = loginDto;
+    const user = await this.usersService.findUserByEmail(email);
 
     if (!user) {
       throw new NotFoundException({ status: 404, message: 'User not found' });
@@ -61,6 +93,83 @@ export class AuthService {
 
     const payload = { id: user.id, email: user.email, role };
 
+    const { accessToken, refreshToken } = await this.generateTokens(payload);
+
+    await this.usersService.updateRefreshToken(user.id, refreshToken);
+
+    return {
+      status: 200,
+      message: 'Login successful',
+      jwt: accessToken,
+      refresh: refreshToken,
+    };
+  }
+
+  async driverLogin(loginDto: LoginDto) {
+    const { email, password } = loginDto;
+    const user = await this.usersService.findDriverByEmail(email);
+
+    if (!user) {
+      throw new NotFoundException({ status: 404, message: 'Driver not found' });
+    }
+
+    const isMatch = await bcrypt.compare(password, user.password);
+    if (!isMatch) {
+      throw new UnauthorizedException({
+        status: 401,
+        message: 'Incorrect email or password',
+      });
+    }
+
+    const role = user.role;
+
+    const payload = { id: user.id, email: user.email, role };
+
+    const { accessToken, refreshToken } = await this.generateTokens(payload);
+
+    await this.usersService.updateRefreshToken(user.id, refreshToken);
+
+    return {
+      status: 200,
+      message: 'Login successful',
+      jwt: accessToken,
+      refresh: refreshToken,
+    };
+  }
+
+  async ownerLogin(loginDto: LoginDto) {
+    const { email, password } = loginDto;
+    const user = await this.usersService.findOwnerByEmail(email);
+
+    if (!user) {
+      throw new NotFoundException({ status: 404, message: 'Owner not found' });
+    }
+
+    const isMatch = await bcrypt.compare(password, user.password);
+    if (!isMatch) {
+      throw new UnauthorizedException({
+        status: 401,
+        message: 'Incorrect email or password',
+      });
+    }
+
+    const role = user.role;
+
+    const payload = { id: user.id, email: user.email, role };
+
+    const { accessToken, refreshToken } = await this.generateTokens(payload);
+
+    await this.usersService.updateRefreshToken(user.id, refreshToken);
+
+    return {
+      status: 200,
+      message: 'Login successful',
+      jwt: accessToken,
+      refresh: refreshToken,
+    };
+  }
+
+  private async generateTokens(payload: any) {
     const accessToken = this.jwtService.sign(payload, {
       secret: process.env.JWT_SECRET,
       expiresIn: '1h',
@@ -71,13 +180,11 @@ export class AuthService {
       expiresIn: '7d',
     });
 
-    await this.usersService.updateRefreshToken(user.id, refreshToken);
+    await this.usersService.updateRefreshToken(payload.id, refreshToken);
 
     return {
-      status: 200,
-      message: 'Login successful',
-      jwt: accessToken,
-      refresh: refreshToken,
+      accessToken,
+      refreshToken,
     };
   }
 
