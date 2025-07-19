@@ -44,7 +44,7 @@ export class CouponEntity {
   @Column({ type: 'timestamp', nullable: true })
   validFrom: Date;
 
-  @Column({ type: 'timestamp' })
+  @Column({ type: 'timestamp', nullable: true })
   validUntil: Date;
 
   @Column({ default: true })

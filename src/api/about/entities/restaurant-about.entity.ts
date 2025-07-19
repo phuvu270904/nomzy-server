@@ -22,7 +22,7 @@ export class RestaurantAboutEntity {
   @Column({ type: 'text', nullable: true })
   overview: string;
 
-  @Column({ type: 'json', nullable: true, default: '{}' })
+  @Column({ type: 'json', nullable: true })
   schedule: {
     monday?: { open: string; close: string };
     tuesday?: { open: string; close: string };
