@@ -229,9 +229,8 @@ export class AuthService {
     }
   }
 
-  async refresh(user: any, refreshToken: string) {
+  async refresh(refreshToken: string) {
     try {
-      const userMatched = await this.usersService.findOne(user.id);
       if (!refreshToken) {
         throw new UnauthorizedException('Cannot find refresh token.');
       }
@@ -247,8 +246,11 @@ export class AuthService {
         throw new UnauthorizedException('Refresh token is invalid.');
       }
 
-      if (refreshToken !== userMatched?.refresh_token) {
-        throw new UnauthorizedException('Invalid refresh token');
+      const userMatched = await this.usersService.findOne(
+        decodedRefreshToken.id,
+      );
+      if (!userMatched) {
+        throw new NotFoundException('User not found');
       }
 
       const dataForAccessToken = {

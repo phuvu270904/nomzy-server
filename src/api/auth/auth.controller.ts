@@ -94,11 +94,8 @@ export class AuthController {
   @ApiBearerAuth('access-token')
   @Post('refresh')
   @ApiBody({ type: RefreshTokenDto, description: 'Refresh token' })
-  async refreshToken(
-    @Request() req,
-    @Body('refreshToken') refreshToken: string,
-  ) {
-    return this.authService.refresh(req.user, refreshToken);
+  async refreshToken(@Body('refreshToken') refreshToken: string) {
+    return this.authService.refresh(refreshToken);
   }
 
   @Public()
