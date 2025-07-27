@@ -16,7 +16,7 @@ export class CategoryEntity {
   name: string;
 
   @Column({ nullable: true })
-  description: string;
+  icon: string;
 
   @Column({ default: true })
   isActive: boolean;
