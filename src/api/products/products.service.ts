@@ -4,6 +4,11 @@ import { Repository } from 'typeorm';
 import { ProductEntity } from './entities/product.entity';
 import { CreateProductDto } from './dto/create-product.dto';
 import { UpdateProductDto } from './dto/update-product.dto';
+import { PaginationQueryDto } from './dto/pagination-query.dto';
+import {
+  PaginatedResponse,
+  PaginationMeta,
+} from './dto/pagination-response.dto';
 
 @Injectable()
 export class ProductsService {
@@ -16,6 +21,40 @@ export class ProductsService {
     return this.productRepository.find({
       relations: ['category'],
     });
+  }
+
+  async findAllPaginated(
+    paginationQuery: PaginationQueryDto,
+  ): Promise<PaginatedResponse<ProductEntity>> {
+    const { page = 1, limit = 10 } = paginationQuery;
+    const skip = (page - 1) * limit;
+
+    const [data, total] = await this.productRepository.findAndCount({
+      relations: ['category'],
+      skip,
+      take: limit,
+      order: {
+        id: 'DESC', // Order by most recent first
+      },
+    });
+
+    const totalPages = Math.ceil(total / limit);
+    const hasNextPage = page < totalPages;
+    const hasPreviousPage = page > 1;
+
+    const meta: PaginationMeta = {
+      page,
+      limit,
+      total,
+      totalPages,
+      hasNextPage,
+      hasPreviousPage,
+    };
+
+    return {
+      data,
+      meta,
+    };
   }
 
   async findOne(id: number): Promise<ProductEntity> {

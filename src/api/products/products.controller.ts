@@ -9,11 +9,14 @@ import {
   Post,
   Put,
   Request,
+  Query,
 } from '@nestjs/common';
 import { ProductsService } from './products.service';
 import { CreateProductDto } from './dto/create-product.dto';
 import { UpdateProductDto } from './dto/update-product.dto';
 import { ProductEntity } from './entities/product.entity';
+import { PaginationQueryDto } from './dto/pagination-query.dto';
+import { PaginatedResponse } from './dto/pagination-response.dto';
 import {
   ApiTags,
   ApiOperation,
@@ -21,6 +24,7 @@ import {
   ApiParam,
   ApiBody,
   ApiBearerAuth,
+  ApiQuery,
 } from '@nestjs/swagger';
 import { Roles } from '../../roles/roles.decorator';
 import { Role } from '../../roles/role.enum';
@@ -31,14 +35,57 @@ import { Role } from '../../roles/role.enum';
 export class ProductsController {
   constructor(private readonly productsService: ProductsService) {}
 
-  @ApiOperation({ summary: 'Get all products' })
+  @ApiOperation({ summary: 'Get all products with optional pagination' })
+  @ApiQuery({
+    name: 'page',
+    required: false,
+    description: 'Page number (starting from 1)',
+    example: 1,
+  })
+  @ApiQuery({
+    name: 'limit',
+    required: false,
+    description: 'Number of items per page (max 100)',
+    example: 10,
+  })
   @ApiResponse({
     status: 200,
-    description: 'Return all products',
+    description: 'Return all products (paginated if query params provided)',
   })
   @Get()
-  async findAll(): Promise<ProductEntity[]> {
+  async findAll(
+    @Query() paginationQuery: PaginationQueryDto,
+  ): Promise<ProductEntity[] | PaginatedResponse<ProductEntity>> {
+    // If pagination parameters are provided, return paginated results
+    if (paginationQuery.page || paginationQuery.limit) {
+      return this.productsService.findAllPaginated(paginationQuery);
+    }
+    // Otherwise, return all products (backward compatibility)
     return this.productsService.findAll();
+  }
+
+  @ApiOperation({ summary: 'Get products with pagination' })
+  @ApiQuery({
+    name: 'page',
+    required: false,
+    description: 'Page number (starting from 1)',
+    example: 1,
+  })
+  @ApiQuery({
+    name: 'limit',
+    required: false,
+    description: 'Number of items per page (max 100)',
+    example: 10,
+  })
+  @ApiResponse({
+    status: 200,
+    description: 'Return paginated products with metadata',
+  })
+  @Get('paginated')
+  async findAllPaginated(
+    @Query() paginationQuery: PaginationQueryDto,
+  ): Promise<PaginatedResponse<ProductEntity>> {
+    return this.productsService.findAllPaginated(paginationQuery);
   }
 
   @ApiOperation({ summary: 'Get a product by ID' })
