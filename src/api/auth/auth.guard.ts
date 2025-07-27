@@ -30,7 +30,7 @@ export class AuthGuard implements CanActivate {
     if (!token) {
       throw new UnauthorizedException({
         status: 401,
-        message: 'Token not found',
+        message: 'TOKEN_MISSING',
       });
     }
     try {
@@ -38,10 +38,18 @@ export class AuthGuard implements CanActivate {
         secret: process.env.JWT_SECRET,
       });
       request['user'] = payload;
-    } catch {
+    } catch (error) {
+      // Check if the error is related to token expiration
+      if (error.name === 'TokenExpiredError') {
+        throw new UnauthorizedException({
+          status: 401,
+          message: 'TOKEN_EXPIRED',
+        });
+      }
+      // For all other JWT-related errors (malformed, invalid signature, etc.)
       throw new UnauthorizedException({
         status: 401,
-        message: 'Invalid token',
+        message: 'TOKEN_INVALID',
       });
     }
     return true;

@@ -17,6 +17,7 @@ import { AuthGuard } from '@nestjs/passport';
 import { ResetPasswordDto } from './dto/resetPassword.dto';
 import { ApiTags, ApiOperation, ApiBody, ApiBearerAuth } from '@nestjs/swagger';
 import { RegisterDto } from './dto/register.dto';
+import { RefreshTokenDto } from './dto/refreshToken.dto';
 
 @ApiTags('Auth')
 @Controller('auth')
@@ -89,8 +90,10 @@ export class AuthController {
     return this.authService.logout(req.user);
   }
 
+  @Public()
   @ApiBearerAuth('access-token')
   @Post('refresh')
+  @ApiBody({ type: RefreshTokenDto, description: 'Refresh token' })
   async refreshToken(
     @Request() req,
     @Body('refreshToken') refreshToken: string,
