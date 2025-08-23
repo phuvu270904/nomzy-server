@@ -31,9 +31,9 @@ export class RestaurantsService {
           phone_number: restaurant.phone_number,
           products: restaurant.products,
           addresses: restaurant.addresses,
-          avatar: restaurant.avatar,
-          feedbacksCount: restaurant.feedbacks?.length,
-          averageRating,
+          image: restaurant.avatar,
+          reviews: restaurant.feedbacks?.length,
+          rating: averageRating,
         };
       }),
     );
