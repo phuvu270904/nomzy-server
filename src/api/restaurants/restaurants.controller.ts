@@ -53,7 +53,6 @@ export class RestaurantsController {
 
   @Delete(':restaurantId/favorite')
   @Roles(Role.USER)
-  @HttpCode(HttpStatus.NO_CONTENT)
   @ApiOperation({ summary: 'Remove a restaurant from user favorites' })
   @ApiParam({
     name: 'restaurantId',
