@@ -190,4 +190,20 @@ export class FeedbacksService {
 
     return response;
   }
+
+  async calcRating(restaurantId: number): Promise<number> {
+    const feedbacks = await this.feedbackRepository.find({
+      where: { restaurantId },
+    });
+
+    if (feedbacks.length === 0) {
+      return 0;
+    }
+
+    const totalRating = feedbacks.reduce(
+      (sum, feedback) => sum + feedback.rating,
+      0,
+    );
+    return totalRating / feedbacks.length;
+  }
 }

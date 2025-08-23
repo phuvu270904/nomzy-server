@@ -24,7 +24,7 @@ export class FeedbackEntity {
   @Column('int')
   restaurantId: number;
 
-  @ManyToOne(() => UserEntity, { onDelete: 'CASCADE' })
+  @ManyToOne('UserEntity', 'feedbacks', { onDelete: 'CASCADE' })
   @JoinColumn({ name: 'restaurantId' })
   restaurant: UserEntity;
 

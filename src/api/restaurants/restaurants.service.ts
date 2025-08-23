@@ -2,32 +2,41 @@ import { Injectable } from '@nestjs/common';
 import { InjectRepository } from '@nestjs/typeorm';
 import { UserEntity, UserRole } from '../users/entities/user.entity';
 import { Repository } from 'typeorm';
+import { FeedbacksService } from '../feedbacks/feedbacks.service';
 
 @Injectable()
 export class RestaurantsService {
   constructor(
     @InjectRepository(UserEntity)
     private readonly userRepository: Repository<UserEntity>,
+    private readonly feedbacksService: FeedbacksService,
   ) {}
 
   async getAllRestaurants() {
     const allUsers = await this.userRepository.find({
-      relations: ['products', 'addresses'],
+      relations: ['products', 'addresses', 'feedbacks'],
     });
 
     const restaurants = allUsers.filter((user) => user.role === UserRole.OWNER);
 
-    const restaurantInfos = restaurants.map((restaurant) => {
-      return {
-        id: restaurant.id,
-        name: restaurant.name,
-        email: restaurant.email,
-        phone_number: restaurant.phone_number,
-        products: restaurant.products,
-        addresses: restaurant.addresses,
-        avatar: restaurant.avatar,
-      };
-    });
+    const restaurantInfos = await Promise.all(
+      restaurants.map(async (restaurant) => {
+        const averageRating = await this.feedbacksService.calcRating(
+          restaurant.id,
+        );
+        return {
+          id: restaurant.id,
+          name: restaurant.name,
+          email: restaurant.email,
+          phone_number: restaurant.phone_number,
+          products: restaurant.products,
+          addresses: restaurant.addresses,
+          avatar: restaurant.avatar,
+          feedbacksCount: restaurant.feedbacks?.length,
+          averageRating,
+        };
+      }),
+    );
 
     return restaurantInfos;
   }

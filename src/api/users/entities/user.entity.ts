@@ -16,6 +16,7 @@ import {
 } from 'typeorm';
 import { ProductEntity } from 'src/api/products/entities/product.entity';
 import { AddressEntity } from 'src/api/addresses/entities/address.entity';
+import { FeedbackEntity } from 'src/api/feedbacks/entities/feedback.entity';
 
 export enum Gender {
   MALE = 'male',
@@ -79,6 +80,9 @@ export class UserEntity {
 
   @OneToMany('ProductEntity', 'restaurant', { cascade: true })
   products?: ProductEntity[];
+
+  @OneToMany('FeedbackEntity', 'restaurant', { cascade: true })
+  feedbacks?: FeedbackEntity[];
 
   @CreateDateColumn({ type: 'timestamp' })
   createdAt: Date;
