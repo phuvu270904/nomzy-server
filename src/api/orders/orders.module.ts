@@ -2,6 +2,7 @@ import { Module } from '@nestjs/common';
 import { OrdersService } from './orders.service';
 import { OrdersController } from './orders.controller';
 import { OrdersGateway } from './orders.gateway';
+import { WebSocketIntegrationService } from './websocket-integration.service';
 import { TypeOrmModule } from '@nestjs/typeorm';
 import { OrderEntity } from './entities/order.entity';
 import { OrderItemEntity } from './entities/order-item.entity';
@@ -27,6 +28,7 @@ import { JwtModule, JwtService } from '@nestjs/jwt';
   controllers: [OrdersController],
   providers: [
     OrdersService,
+    WebSocketIntegrationService,
     {
       provide: OrdersGateway,
       useFactory: (jwtService: JwtService, ordersService: OrdersService) => {
@@ -37,6 +39,6 @@ import { JwtModule, JwtService } from '@nestjs/jwt';
       inject: [JwtService, OrdersService],
     },
   ],
-  exports: [OrdersService, OrdersGateway],
+  exports: [OrdersService, OrdersGateway, WebSocketIntegrationService],
 })
 export class OrdersModule {}

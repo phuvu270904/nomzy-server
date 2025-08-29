@@ -24,12 +24,16 @@ import {
 import { OrderEntity, OrderStatus } from './entities/order.entity';
 import { Roles } from 'src/roles/roles.decorator';
 import { Role } from 'src/roles/role.enum';
+import { WebSocketIntegrationService } from './websocket-integration.service';
 
 @ApiTags('Orders')
 @ApiBearerAuth('access-token')
 @Controller('orders')
 export class OrdersController {
-  constructor(private readonly ordersService: OrdersService) {}
+  constructor(
+    private readonly ordersService: OrdersService,
+    private readonly webSocketIntegration: WebSocketIntegrationService,
+  ) {}
 
   @Post()
   @Roles(Role.USER)
@@ -39,8 +43,9 @@ export class OrdersController {
     description: 'Order created successfully',
     type: OrderEntity,
   })
-  create(@Request() req, @Body() createOrderDto: CreateOrderDto) {
-    return this.ordersService.create(req.user.id, createOrderDto);
+  async create(@Request() req, @Body() createOrderDto: CreateOrderDto) {
+    const order = await this.ordersService.create(req.user.id, createOrderDto);
+    return order;
   }
 
   @Get()
@@ -147,10 +152,11 @@ export class OrdersController {
     @Param('id', ParseIntPipe) id: number,
     @Body() updateOrderDto: { status: OrderStatus },
   ) {
-    return this.ordersService.updateOrderStatus(
-      req.user.id,
+    return this.ordersService.updateOrderStatusWithRole(
       id,
       updateOrderDto.status,
+      req.user.id,
+      req.user.role,
     );
   }
 
@@ -173,11 +179,7 @@ export class OrdersController {
     @Param('id', ParseIntPipe) orderId: number,
     @Param('driverId', ParseIntPipe) driverId: number,
   ) {
-    return this.ordersService.assignDriverToOrder(
-      req.user.id,
-      orderId,
-      driverId,
-    );
+    return this.ordersService.assignDriverToOrderSimple(orderId, driverId);
   }
 
   // Driver endpoints
@@ -215,10 +217,11 @@ export class OrdersController {
     @Param('id', ParseIntPipe) id: number,
     @Body() updateOrderDto: { status: OrderStatus },
   ) {
-    return this.ordersService.updateDeliveryStatus(
-      req.user.id,
+    return this.ordersService.updateOrderStatusWithRole(
       id,
       updateOrderDto.status,
+      req.user.id,
+      req.user.role,
     );
   }
 }
