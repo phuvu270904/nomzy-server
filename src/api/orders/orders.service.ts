@@ -2,9 +2,11 @@ import {
   BadRequestException,
   Injectable,
   NotFoundException,
+  Inject,
+  forwardRef,
 } from '@nestjs/common';
 import { InjectRepository } from '@nestjs/typeorm';
-import { Repository } from 'typeorm';
+import { Repository, IsNull } from 'typeorm';
 import {
   OrderEntity,
   OrderStatus,
@@ -22,6 +24,8 @@ import { CouponType } from '../coupons/entities/coupon.entity';
 
 @Injectable()
 export class OrdersService {
+  private ordersGateway: any; // We'll inject this later to avoid circular dependency
+
   constructor(
     @InjectRepository(OrderEntity)
     private readonly orderRepository: Repository<OrderEntity>,
@@ -34,6 +38,11 @@ export class OrdersService {
     private readonly productsService: ProductsService,
     private readonly couponsService: CouponsService,
   ) {}
+
+  // Setter to inject gateway after initialization to avoid circular dependency
+  setOrdersGateway(gateway: any) {
+    this.ordersGateway = gateway;
+  }
 
   async create(
     userId: number,
@@ -131,7 +140,14 @@ export class OrdersService {
     await this.cartsService.clearCart(userId);
 
     // Return the completed order with items
-    return this.findOne(userId, savedOrder.id);
+    const completedOrder = await this.findOne(userId, savedOrder.id);
+
+    // Notify WebSocket clients about new order
+    if (this.ordersGateway) {
+      await this.ordersGateway.notifyNewOrder(completedOrder);
+    }
+
+    return completedOrder;
   }
 
   async findAll(userId: number): Promise<OrderEntity[]> {
@@ -217,6 +233,8 @@ export class OrdersService {
   async updateOrderStatus(
     restaurantId: number,
     id: number,
+    userId: number,
+    userRole: UserRole,
     status: OrderStatus,
   ): Promise<OrderEntity> {
     const order = await this.orderRepository.findOne({
@@ -311,5 +329,154 @@ export class OrdersService {
     }
 
     return this.orderRepository.save(order);
+  }
+
+  // Method for WebSocket gateway - get available orders for drivers
+  async getAvailableOrdersForDrivers(): Promise<OrderEntity[]> {
+    return this.orderRepository.find({
+      where: {
+        status: OrderStatus.READY_FOR_PICKUP,
+        driverId: IsNull(),
+      },
+      relations: [
+        'orderItems',
+        'orderItems.product',
+        'address',
+        'user',
+        'restaurant',
+      ],
+      order: { createdAt: 'ASC' },
+    });
+  }
+
+  // Method for WebSocket gateway - get restaurant orders
+  async getRestaurantOrders(restaurantId: number): Promise<OrderEntity[]> {
+    return this.orderRepository.find({
+      where: { restaurantId },
+      relations: [
+        'orderItems',
+        'orderItems.product',
+        'address',
+        'user',
+        'driver',
+      ],
+      order: { createdAt: 'DESC' },
+    });
+  }
+
+  // Method for WebSocket gateway - update order status with role-based validation
+  async updateOrderStatusWithRole(
+    orderId: number,
+    status: OrderStatus,
+    userId: number,
+    userRole: UserRole,
+  ): Promise<OrderEntity> {
+    const order = await this.orderRepository.findOne({
+      where: { id: orderId },
+      relations: ['orderItems', 'address', 'user', 'restaurant', 'driver'],
+    });
+
+    if (!order) {
+      throw new NotFoundException(`Order with ID ${orderId} not found`);
+    }
+
+    // Validate permissions based on user role
+    if (userRole === UserRole.OWNER) {
+      if (order.restaurantId !== userId) {
+        throw new BadRequestException(
+          'Restaurant can only update their own orders',
+        );
+      }
+      // Restaurants can update to: confirmed, preparing, ready_for_pickup, cancelled
+      const allowedStatuses = [
+        OrderStatus.CONFIRMED,
+        OrderStatus.PREPARING,
+        OrderStatus.READY_FOR_PICKUP,
+        OrderStatus.CANCELLED,
+      ];
+      if (!allowedStatuses.includes(status)) {
+        throw new BadRequestException(
+          'Restaurant can only update to confirmed, preparing, ready_for_pickup, or cancelled',
+        );
+      }
+    } else if (userRole === UserRole.DRIVER) {
+      if (order.driverId !== userId) {
+        throw new BadRequestException(
+          'Driver can only update orders assigned to them',
+        );
+      }
+      // Drivers can update to: out_for_delivery, delivered
+      const allowedStatuses = [
+        OrderStatus.OUT_FOR_DELIVERY,
+        OrderStatus.DELIVERED,
+      ];
+      if (!allowedStatuses.includes(status)) {
+        throw new BadRequestException(
+          'Driver can only update to out_for_delivery or delivered',
+        );
+      }
+    } else {
+      throw new BadRequestException('Unauthorized to update order status');
+    }
+
+    order.status = status;
+
+    // If the order is delivered, set the delivery time
+    if (status === OrderStatus.DELIVERED) {
+      order.deliveredAt = new Date();
+      order.paymentStatus = PaymentStatus.PAID;
+    }
+
+    const updatedOrder = await this.orderRepository.save(order);
+
+    // Notify WebSocket clients about order status update
+    if (this.ordersGateway) {
+      await this.ordersGateway.broadcastOrderUpdate(updatedOrder);
+    }
+
+    return updatedOrder;
+  }
+
+  // Method for WebSocket gateway - assign driver to order (simplified)
+  async assignDriverToOrderSimple(
+    orderId: number,
+    driverId: number,
+  ): Promise<OrderEntity> {
+    const order = await this.orderRepository.findOne({
+      where: {
+        id: orderId,
+        status: OrderStatus.READY_FOR_PICKUP,
+        driverId: IsNull(),
+      },
+      relations: ['orderItems', 'address', 'user', 'restaurant'],
+    });
+
+    if (!order) {
+      throw new NotFoundException(
+        `Available order with ID ${orderId} not found`,
+      );
+    }
+
+    // Check if driver exists and is a driver
+    const driver = await this.userRepository.findOne({
+      where: { id: driverId, role: UserRole.DRIVER },
+    });
+
+    if (!driver) {
+      throw new NotFoundException(`Driver with ID ${driverId} not found`);
+    }
+
+    order.driverId = driverId;
+    order.status = OrderStatus.OUT_FOR_DELIVERY;
+
+    const updatedOrder = await this.orderRepository.save(order);
+
+    // Notify WebSocket clients about driver assignment
+    if (this.ordersGateway) {
+      await this.ordersGateway.broadcastOrderUpdate(updatedOrder);
+      await this.ordersGateway.notifyDriverAssignment(updatedOrder);
+    }
+
+    return updatedOrder;
   }
 }
