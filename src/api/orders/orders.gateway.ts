@@ -2,29 +2,28 @@ import {
   WebSocketGateway,
   WebSocketServer,
   SubscribeMessage,
-  ConnectedSocket,
   MessageBody,
+  ConnectedSocket,
   OnGatewayConnection,
   OnGatewayDisconnect,
 } from '@nestjs/websockets';
 import { Server, Socket } from 'socket.io';
-import { Logger, UseGuards } from '@nestjs/common';
-import { JwtService } from '@nestjs/jwt';
+import { Injectable, Logger } from '@nestjs/common';
 import { OrdersService } from './orders.service';
 import { OrderEntity, OrderStatus } from './entities/order.entity';
-import { UserRole } from '../users/entities/user.entity';
-import { UpdateOrderStatusDto } from './dto/update-order-status.dto';
 
 interface AuthenticatedSocket extends Socket {
-  userId: number;
-  userRole: UserRole;
-  restaurantId?: number;
+  user?: {
+    id: number;
+    role: string;
+    email: string;
+  };
 }
 
+@Injectable()
 @WebSocketGateway({
   cors: {
     origin: '*',
-    methods: ['GET', 'POST'],
   },
   namespace: '/orders',
 })
@@ -33,236 +32,278 @@ export class OrdersGateway implements OnGatewayConnection, OnGatewayDisconnect {
   server: Server;
 
   private readonly logger = new Logger(OrdersGateway.name);
-  private connectedClients = new Map<string, AuthenticatedSocket>();
+  private connectedUsers = new Map<number, string>(); // userId -> socketId
+  private driverSockets = new Map<number, string>(); // driverId -> socketId
+  private restaurantSockets = new Map<number, string>(); // restaurantId -> socketId
 
-  constructor(
-    private readonly jwtService: JwtService,
-    private readonly ordersService: OrdersService,
-  ) {}
+  constructor(private readonly ordersService: OrdersService) {}
 
-  async handleConnection(client: Socket) {
+  async handleConnection(client: AuthenticatedSocket) {
     try {
-      const token =
-        client.handshake.auth.token ||
-        client.handshake.headers.authorization?.split(' ')[1];
+      // In a real application, you'd validate the JWT token here
+      // For now, we'll assume the user info is passed in the handshake
+      const userId = parseInt(client.handshake.query.userId as string);
+      const userRole = client.handshake.query.role as string;
 
-      if (!token) {
-        this.logger.warn('Client attempted to connect without token');
+      if (!userId || !userRole) {
         client.disconnect();
         return;
       }
 
-      const payload = await this.jwtService.verifyAsync(token);
-      const authenticatedClient = client as AuthenticatedSocket;
+      client.user = { id: userId, role: userRole, email: '' };
+      this.connectedUsers.set(userId, client.id);
 
-      authenticatedClient.userId = payload.sub;
-      authenticatedClient.userRole = payload.role;
-
-      if (payload.role === UserRole.OWNER) {
-        authenticatedClient.restaurantId = payload.sub;
+      // Track different types of users
+      if (userRole === 'driver') {
+        this.driverSockets.set(userId, client.id);
+        this.logger.log(`Driver ${userId} connected`);
+      } else if (userRole === 'owner') {
+        this.restaurantSockets.set(userId, client.id);
+        this.logger.log(`Restaurant owner ${userId} connected`);
       }
 
-      this.connectedClients.set(client.id, authenticatedClient);
-
-      // Join appropriate rooms based on user role
-      await this.joinUserRooms(authenticatedClient);
-
-      this.logger.log(
-        `Client connected: ${client.id}, User: ${payload.sub}, Role: ${payload.role}`,
-      );
+      this.logger.log(`User ${userId} with role ${userRole} connected`);
     } catch (error) {
-      this.logger.error('Invalid token provided', error.message);
+      this.logger.error('Connection error:', error);
       client.disconnect();
     }
   }
 
-  handleDisconnect(client: Socket) {
-    this.connectedClients.delete(client.id);
-    this.logger.log(`Client disconnected: ${client.id}`);
-  }
-
-  private async joinUserRooms(client: AuthenticatedSocket) {
-    switch (client.userRole) {
-      case UserRole.USER:
-        // Users join their personal room to receive order updates
-        await client.join(`user-${client.userId}`);
-        break;
-
-      case UserRole.OWNER:
-        // Restaurants join their restaurant room to receive new orders
-        await client.join(`restaurant-${client.restaurantId}`);
-        break;
-
-      case UserRole.DRIVER:
-        // Drivers join the drivers pool to receive available orders
-        await client.join('drivers-pool');
-        await client.join(`driver-${client.userId}`);
-        break;
+  handleDisconnect(client: AuthenticatedSocket) {
+    if (client.user) {
+      const userId = client.user.id;
+      this.connectedUsers.delete(userId);
+      this.driverSockets.delete(userId);
+      this.restaurantSockets.delete(userId);
+      this.logger.log(`User ${userId} disconnected`);
     }
   }
 
-  // Event: Restaurant updates order status
+  // Join order room (called when order is created or driver accepts)
+  @SubscribeMessage('join-order-room')
+  async handleJoinOrderRoom(
+    @ConnectedSocket() client: AuthenticatedSocket,
+    @MessageBody() data: { orderId: number },
+  ) {
+    const roomName = `order_${data.orderId}`;
+    await client.join(roomName);
+    this.logger.log(`User ${client.user?.id} joined room ${roomName}`);
+
+    client.emit('joined-order-room', { orderId: data.orderId });
+  }
+
+  // Update order status (called by driver or restaurant)
   @SubscribeMessage('update-order-status')
   async handleUpdateOrderStatus(
     @ConnectedSocket() client: AuthenticatedSocket,
-    @MessageBody() data: UpdateOrderStatusDto,
+    @MessageBody()
+    data: {
+      orderId: number;
+      status: OrderStatus;
+      location?: { lat: number; lng: number };
+    },
   ) {
     try {
-      if (
-        client.userRole !== UserRole.OWNER &&
-        client.userRole !== UserRole.DRIVER
-      ) {
-        client.emit('error', {
-          message: 'Unauthorized to update order status',
-        });
-        return;
-      }
-
-      const order = await this.ordersService.updateOrderStatusWithRole(
+      const order = await this.ordersService.updateOrderStatus(
         data.orderId,
         data.status,
-        client.userId,
-        client.userRole,
+        client.user!.id,
       );
 
-      // Emit order update to all relevant parties
-      await this.broadcastOrderUpdate(order);
+      // Broadcast status update to all users in the order room
+      const roomName = `order_${data.orderId}`;
+      this.server.to(roomName).emit('order-status-updated', {
+        orderId: data.orderId,
+        status: data.status,
+        updatedBy: client.user!.id,
+        updatedAt: new Date(),
+        order: order,
+        location: data.location,
+      });
+
+      this.logger.log(
+        `Order ${data.orderId} status updated to ${data.status} by user ${client.user!.id}`,
+      );
     } catch (error) {
-      client.emit('error', { message: error.message });
+      this.logger.error('Error updating order status:', error);
+      client.emit('error', { message: 'Failed to update order status' });
     }
   }
 
-  // Event: Driver accepts an order
-  @SubscribeMessage('accept-order')
-  async handleAcceptOrder(
+  // Driver accepts order
+  @SubscribeMessage('driver-accept-order')
+  async handleDriverAcceptOrder(
     @ConnectedSocket() client: AuthenticatedSocket,
     @MessageBody() data: { orderId: number },
   ) {
     try {
-      if (client.userRole !== UserRole.DRIVER) {
+      if (client.user?.role !== 'driver') {
         client.emit('error', { message: 'Only drivers can accept orders' });
         return;
       }
 
-      const order = await this.ordersService.assignDriverToOrderSimple(
+      const order = await this.ordersService.assignDriverToOrder(
         data.orderId,
-        client.userId,
+        client.user.id,
       );
 
-      // Join the specific order room for real-time updates
-      await client.join(`order-${data.orderId}`);
+      // Join the order room
+      const roomName = `order_${data.orderId}`;
+      await client.join(roomName);
 
-      // Remove order from drivers pool (no longer available)
-      this.server
-        .to('drivers-pool')
-        .emit('order-taken', { orderId: data.orderId });
+      // Notify all parties in the order room
+      this.server.to(roomName).emit('driver-assigned', {
+        orderId: data.orderId,
+        driverId: client.user.id,
+        order: order,
+      });
 
-      // Notify all relevant parties about the driver assignment
-      await this.broadcastOrderUpdate(order);
-
-      client.emit('order-accepted', { order });
-    } catch (error) {
-      client.emit('error', { message: error.message });
-    }
-  }
-
-  // Event: Get available orders for drivers
-  @SubscribeMessage('get-available-orders')
-  async handleGetAvailableOrders(
-    @ConnectedSocket() client: AuthenticatedSocket,
-  ) {
-    try {
-      if (client.userRole !== UserRole.DRIVER) {
-        client.emit('error', {
-          message: 'Only drivers can request available orders',
-        });
-        return;
-      }
-
-      const availableOrders =
-        await this.ordersService.getAvailableOrdersForDrivers();
-      client.emit('available-orders', { orders: availableOrders });
-    } catch (error) {
-      client.emit('error', { message: error.message });
-    }
-  }
-
-  // Event: Get restaurant orders
-  @SubscribeMessage('get-restaurant-orders')
-  async handleGetRestaurantOrders(
-    @ConnectedSocket() client: AuthenticatedSocket,
-  ) {
-    try {
-      if (client.userRole !== UserRole.OWNER) {
-        client.emit('error', {
-          message: 'Only restaurants can request their orders',
-        });
-        return;
-      }
-
-      if (!client.restaurantId) {
-        client.emit('error', {
-          message: 'Restaurant ID not found',
-        });
-        return;
-      }
-
-      const orders = await this.ordersService.getRestaurantOrders(
-        client.restaurantId,
+      this.logger.log(
+        `Driver ${client.user.id} accepted order ${data.orderId}`,
       );
-      client.emit('restaurant-orders', { orders });
     } catch (error) {
-      client.emit('error', { message: error.message });
+      this.logger.error('Error accepting order:', error);
+      client.emit('error', { message: 'Failed to accept order' });
     }
   }
 
-  // Public method to be called when a new order is created
-  async notifyNewOrder(order: OrderEntity) {
-    // Notify the user who placed the order
-    this.server.to(`user-${order.userId}`).emit('order-created', { order });
+  // Driver declines order
+  @SubscribeMessage('driver-decline-order')
+  async handleDriverDeclineOrder(
+    @ConnectedSocket() client: AuthenticatedSocket,
+    @MessageBody() data: { orderId: number },
+  ) {
+    try {
+      if (client.user?.role !== 'driver') {
+        client.emit('error', { message: 'Only drivers can decline orders' });
+        return;
+      }
 
-    // Notify the restaurant about the new order
-    this.server
-      .to(`restaurant-${order.restaurantId}`)
-      .emit('new-order', { order });
+      // Continue searching for other drivers
+      this.searchForAvailableDriver(data.orderId);
 
-    this.logger.log(
-      `New order ${order.id} broadcasted to user ${order.userId} and restaurant ${order.restaurantId}`,
-    );
+      this.logger.log(
+        `Driver ${client.user.id} declined order ${data.orderId}`,
+      );
+      client.emit('order-declined', { orderId: data.orderId });
+    } catch (error) {
+      this.logger.error('Error declining order:', error);
+    }
   }
 
-  // Public method to broadcast order updates
-  async broadcastOrderUpdate(order: OrderEntity) {
-    // Notify the user about order status change
-    this.server.to(`user-${order.userId}`).emit('order-updated', { order });
-
-    // Notify the restaurant about order status change
-    this.server
-      .to(`restaurant-${order.restaurantId}`)
-      .emit('order-updated', { order });
-
-    // If order is ready for pickup, notify all available drivers
-    if (order.status === OrderStatus.READY_FOR_PICKUP && !order.driverId) {
-      this.server.to('drivers-pool').emit('new-available-order', { order });
+  // Methods to be called from the service
+  async notifyRestaurantNewOrder(restaurantId: number, order: OrderEntity) {
+    const restaurantSocketId = this.restaurantSockets.get(restaurantId);
+    if (restaurantSocketId) {
+      this.server.to(restaurantSocketId).emit('new-order', {
+        order: order,
+        message: 'New order received!',
+      });
     }
 
-    // If there's a driver assigned, notify them specifically
-    if (order.driverId) {
-      this.server
-        .to(`driver-${order.driverId}`)
-        .emit('order-updated', { order });
-      this.server.to(`order-${order.id}`).emit('order-updated', { order });
+    // Also add restaurant to the order room
+    const roomName = `order_${order.id}`;
+    if (restaurantSocketId) {
+      const restaurantSocket =
+        this.server.sockets.sockets.get(restaurantSocketId);
+      if (restaurantSocket) {
+        await restaurantSocket.join(roomName);
+      }
     }
-
-    this.logger.log(`Order ${order.id} update broadcasted to relevant parties`);
   }
 
-  // Public method to notify driver about order assignment
-  async notifyDriverAssignment(order: OrderEntity) {
-    if (order.driverId) {
-      this.server
-        .to(`driver-${order.driverId}`)
-        .emit('order-assigned', { order });
+  async notifyDriverOrderRequest(driverId: number, order: OrderEntity) {
+    const driverSocketId = this.driverSockets.get(driverId);
+    if (driverSocketId) {
+      this.server.to(driverSocketId).emit('order-request', {
+        order: order,
+        message: 'New delivery request!',
+        expiresAt: new Date(Date.now() + 5 * 60 * 1000), // 5 minutes to respond
+      });
     }
+  }
+
+  async searchForAvailableDriver(orderId: number) {
+    try {
+      const availableDrivers =
+        await this.ordersService.findAvailableDrivers(orderId);
+
+      if (availableDrivers.length === 0) {
+        this.logger.warn(`No available drivers found for order ${orderId}`);
+        return;
+      }
+
+      // Get the order details
+      const order = await this.ordersService.findOrderById(orderId);
+      if (!order) {
+        this.logger.error(`Order ${orderId} not found`);
+        return;
+      }
+
+      // Notify the first available driver
+      const firstDriver = availableDrivers[0];
+      await this.notifyDriverOrderRequest(firstDriver.id, order);
+
+      // Set timeout to search for next driver if no response
+      setTimeout(
+        // eslint-disable-next-line @typescript-eslint/no-misused-promises
+        async () => {
+          const updatedOrder = await this.ordersService.findOrderById(orderId);
+          if (
+            updatedOrder &&
+            !updatedOrder.driverId &&
+            updatedOrder.status === OrderStatus.CONFIRMED
+          ) {
+            this.logger.log(
+              `No response from driver ${firstDriver.id}, trying next driver`,
+            );
+            // Remove first driver and try next
+            const remainingDrivers = availableDrivers.slice(1);
+            if (remainingDrivers.length > 0) {
+              await this.notifyDriverOrderRequest(
+                remainingDrivers[0].id,
+                order,
+              );
+            }
+          }
+        },
+        5 * 60 * 1000,
+      ); // 5 minutes timeout per driver
+    } catch (error) {
+      this.logger.error('Error searching for drivers:', error);
+    }
+  }
+
+  async cancelOrderAfterTimeout(orderId: number) {
+    try {
+      const order = await this.ordersService.findOrderById(orderId);
+      if (order && !order.driverId && order.status === OrderStatus.CONFIRMED) {
+        await this.ordersService.updateOrderStatus(
+          orderId,
+          OrderStatus.CANCELLED,
+          null,
+        );
+
+        // Notify all parties in the order room
+        const roomName = `order_${orderId}`;
+        this.server.to(roomName).emit('order-cancelled', {
+          orderId: orderId,
+          reason: 'No driver found within 30 minutes',
+          cancelledAt: new Date(),
+        });
+
+        this.logger.log(`Order ${orderId} cancelled due to timeout`);
+      }
+    } catch (error) {
+      this.logger.error('Error cancelling order after timeout:', error);
+    }
+  }
+
+  getOnlineDrivers(): number[] {
+    return Array.from(this.driverSockets.keys());
+  }
+
+  isDriverOnline(driverId: number): boolean {
+    return this.driverSockets.has(driverId);
   }
 }

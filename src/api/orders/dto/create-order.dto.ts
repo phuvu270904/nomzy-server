@@ -1,54 +1,68 @@
-import { ApiProperty } from '@nestjs/swagger';
 import {
-  IsEnum,
-  IsNotEmpty,
   IsNumber,
+  IsArray,
   IsOptional,
+  IsEnum,
   IsString,
+  ValidateNested,
 } from 'class-validator';
+import { Type } from 'class-transformer';
 import { PaymentMethod } from '../entities/order.entity';
 
-export class CreateOrderDto {
-  @ApiProperty({
-    description: 'Address ID for delivery',
-    example: 1,
-  })
+export class CreateOrderItemDto {
   @IsNumber()
-  @IsNotEmpty()
+  productId: number;
+
+  @IsNumber()
+  quantity: number;
+
+  @IsNumber()
+  unitPrice: number;
+
+  @IsNumber()
+  @IsOptional()
+  discount?: number;
+
+  @IsNumber()
+  subtotal: number;
+}
+
+export class CreateOrderDto {
+  @IsNumber()
+  userId: number;
+
+  @IsNumber()
+  restaurantId: number;
+
+  @IsNumber()
   addressId: number;
 
-  @ApiProperty({
-    description: 'Payment method',
-    example: PaymentMethod.CASH_ON_DELIVERY,
-    enum: PaymentMethod,
-  })
-  @IsEnum(PaymentMethod)
-  @IsNotEmpty()
-  paymentMethod: PaymentMethod;
+  @IsArray()
+  @ValidateNested({ each: true })
+  @Type(() => CreateOrderItemDto)
+  orderItems: CreateOrderItemDto[];
 
-  @ApiProperty({
-    description: 'Optional coupon code from user coupon to apply',
-    example: '1',
-    required: false,
-  })
+  @IsNumber()
+  subtotal: number;
+
+  @IsNumber()
+  deliveryFee: number;
+
+  @IsNumber()
+  @IsOptional()
+  discount?: number;
+
+  @IsNumber()
+  total: number;
+
   @IsNumber()
   @IsOptional()
   couponId?: number;
 
-  @ApiProperty({
-    description: 'Additional notes for the order',
-    example: 'Please ring the doorbell twice',
-    required: false,
-  })
+  @IsEnum(PaymentMethod)
+  paymentMethod: PaymentMethod;
+
   @IsString()
   @IsOptional()
   notes?: string;
-
-  @ApiProperty({
-    description: 'Restaurant ID',
-    example: 1,
-  })
-  @IsNumber()
-  @IsNotEmpty()
-  restaurantId: number;
 }
