@@ -11,12 +11,12 @@ export class CreateCategoryDto {
   name: string;
 
   @ApiPropertyOptional({
-    description: 'Category description',
-    example: 'Electronic devices and accessories',
+    description: 'Category icon',
+    example: 'https://example.com/icon.png',
   })
   @IsOptional()
   @IsString()
-  description?: string;
+  icon?: string;
 
   @ApiPropertyOptional({
     description: 'Whether the category is active',
