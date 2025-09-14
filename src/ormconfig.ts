@@ -6,7 +6,7 @@ dotenv.config({
 });
 
 export default {
-  type: 'mysql',
+  type: 'postgres',
   host: process.env.DB_HOST,
   port: process.env.DB_PORT,
   username: process.env.DB_USER,
@@ -14,6 +14,7 @@ export default {
   database: process.env.DB_NAME,
   entities: [`dist/**/*.entity.{js,ts}`],
   synchronize: true,
+  ssl: { rejectUnauthorized: false },
   migrations: ['src/migations/*.ts', 'dist/migrations/*.js'],
   cli: {
     migrationsDir: 'src/migrations',
