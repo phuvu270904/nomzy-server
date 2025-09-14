@@ -114,7 +114,7 @@ export class AddressesService {
     );
   }
 
-  async getDefaultAddress(userId: number): Promise<AddressEntity> {
+  async getDefaultAddress(userId: number): Promise<AddressEntity | null> {
     const defaultAddress = await this.addressRepository.findOne({
       where: { userId, isDefault: true },
     });
@@ -127,7 +127,7 @@ export class AddressesService {
       });
 
       if (!latestAddress) {
-        throw new NotFoundException('No addresses found for this user');
+        return null;
       }
 
       return latestAddress;
