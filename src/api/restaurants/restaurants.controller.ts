@@ -33,6 +33,20 @@ export class RestaurantsController {
     return this.restaurantsService.getAllRestaurants(userId);
   }
 
+  @Get(':id')
+  @ApiOperation({ summary: 'Get restaurant details by ID' })
+  @ApiParam({ name: 'id', description: 'Restaurant ID' })
+  @ApiResponse({
+    status: 200,
+    description: 'Restaurant details retrieved successfully',
+    type: UserEntity,
+  })
+  @ApiResponse({ status: 404, description: 'Restaurant not found' })
+  async getRestaurantById(@Param('id', ParseIntPipe) id: number, @Req() req) {
+    const userId = req.user.id;
+    return this.restaurantsService.getRestaurantById(id, userId);
+  }
+
   @Post(':restaurantId/favorite')
   @Roles(Role.USER)
   @ApiOperation({ summary: 'Add a restaurant to user favorites' })

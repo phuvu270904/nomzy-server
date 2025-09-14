@@ -55,6 +55,36 @@ export class RestaurantsService {
     return restaurantInfos;
   }
 
+  async getRestaurantById(id: number, userId?: number) {
+    const restaurant = await this.userRepository.findOne({
+      where: { id, role: UserRole.OWNER },
+      relations: ['products', 'addresses', 'feedbacks'],
+    });
+
+    if (!restaurant) {
+      throw new Error('Restaurant not found');
+    }
+
+    const averageRating = await this.feedbacksService.calcRating(restaurant.id);
+
+    // Check if this restaurant is liked by the current user
+    let liked = false;
+    if (userId) {
+      liked = await this.favoritesService.checkIsFavorite(
+        userId,
+        restaurant.id,
+      );
+    }
+
+    const { password, ...safeInfo } = restaurant;
+
+    return {
+      ...safeInfo,
+      averageRating,
+      liked,
+    };
+  }
+
   async addToFavorites(userId: number, restaurantId: number) {
     const createFavoriteDto: CreateFavoriteDto = { restaurantId };
     return this.favoritesService.addToFavorites(userId, createFavoriteDto);
