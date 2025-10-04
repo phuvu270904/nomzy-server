@@ -30,6 +30,15 @@ export class CartsService {
       await this.cartRepository.save(cart);
     }
 
+    cart = await this.cartRepository.findOne({
+      where: { id: cart.id },
+      relations: ['cartItems', 'cartItems.product'],
+    });
+
+    if (!cart) {
+      throw new NotFoundException('Cart not found after creation');
+    }
+
     return cart;
   }
 
