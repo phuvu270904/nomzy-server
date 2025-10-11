@@ -36,6 +36,15 @@ export class UpdateProductDto {
   price?: number;
 
   @ApiPropertyOptional({
+    description: 'Product discount price',
+    example: 499.99,
+  })
+  @IsOptional()
+  @IsNumber()
+  @Min(0)
+  discountPrice?: number;
+
+  @ApiPropertyOptional({
     description: 'Product image URL',
     example: 'https://example.com/images/product.jpg',
   })

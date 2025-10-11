@@ -37,6 +37,15 @@ export class CreateProductDto {
   price: number;
 
   @ApiPropertyOptional({
+    description: 'Product discount price',
+    example: 15.99,
+  })
+  @IsOptional()
+  @IsNumber()
+  @Min(0)
+  discountPrice?: number;
+
+  @ApiPropertyOptional({
     description: 'Product image URL',
     example: 'https://example.com/images/product.jpg',
   })

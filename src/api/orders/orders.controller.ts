@@ -39,7 +39,7 @@ export class OrdersController {
     // Start searching for drivers after 30 seconds to give restaurant time to prepare
     setTimeout(() => {
       void this.ordersGateway.searchForAvailableDriver(confirmedOrder.id);
-    }, 30000);
+    }, 5000);
 
     // Set timeout to cancel order if no driver found within 30 minutes
     setTimeout(
