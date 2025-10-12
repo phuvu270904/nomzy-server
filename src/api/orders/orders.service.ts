@@ -9,6 +9,7 @@ import { OrderEntity, OrderStatus } from './entities/order.entity';
 import { OrderItemEntity } from './entities/order-item.entity';
 import { UserEntity, UserRole } from '../users/entities/user.entity';
 import { CreateOrderDto } from './dto/create-order.dto';
+import { OrderType } from './dto/order-type.dto';
 
 @Injectable()
 export class OrdersService {
@@ -209,6 +210,73 @@ export class OrdersService {
       relations: ['user', 'restaurant', 'orderItems', 'address'],
       order: { createdAt: 'DESC' },
     });
+  }
+
+  async getOrdersByUserAndType(
+    userId: number,
+    type: OrderType,
+  ): Promise<OrderEntity[]> {
+    const statusMap = this.getStatusesByType(type);
+
+    return this.orderRepository.find({
+      where: {
+        userId,
+        status: In(statusMap),
+      },
+      relations: ['restaurant', 'driver', 'orderItems', 'address'],
+      order: { createdAt: 'DESC' },
+    });
+  }
+
+  async getOrdersByRestaurantAndType(
+    restaurantId: number,
+    type: OrderType,
+  ): Promise<OrderEntity[]> {
+    const statusMap = this.getStatusesByType(type);
+
+    return this.orderRepository.find({
+      where: {
+        restaurantId,
+        status: In(statusMap),
+      },
+      relations: ['user', 'driver', 'orderItems', 'address'],
+      order: { createdAt: 'DESC' },
+    });
+  }
+
+  async getOrdersByDriverAndType(
+    driverId: number,
+    type: OrderType,
+  ): Promise<OrderEntity[]> {
+    const statusMap = this.getStatusesByType(type);
+
+    return this.orderRepository.find({
+      where: {
+        driverId,
+        status: In(statusMap),
+      },
+      relations: ['user', 'restaurant', 'orderItems', 'address'],
+      order: { createdAt: 'DESC' },
+    });
+  }
+
+  private getStatusesByType(type: OrderType): OrderStatus[] {
+    switch (type) {
+      case OrderType.ACTIVE:
+        return [
+          OrderStatus.PENDING,
+          OrderStatus.CONFIRMED,
+          OrderStatus.PREPARING,
+          OrderStatus.READY_FOR_PICKUP,
+          OrderStatus.OUT_FOR_DELIVERY,
+        ];
+      case OrderType.COMPLETED:
+        return [OrderStatus.DELIVERED];
+      case OrderType.CANCELLED:
+        return [OrderStatus.CANCELLED];
+      default:
+        return [];
+    }
   }
 
   private isValidStatusTransition(
