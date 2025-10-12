@@ -35,6 +35,7 @@ export class OrdersGateway implements OnGatewayConnection, OnGatewayDisconnect {
   private connectedUsers = new Map<number, string>(); // userId -> socketId
   private driverSockets = new Map<number, string>(); // driverId -> socketId
   private restaurantSockets = new Map<number, string>(); // restaurantId -> socketId
+  private declinedDrivers = new Map<number, Set<number>>(); // orderId -> Set<driverId>
 
   constructor(private readonly ordersService: OrdersService) {}
 
@@ -110,6 +111,14 @@ export class OrdersGateway implements OnGatewayConnection, OnGatewayDisconnect {
         client.user!.id,
       );
 
+      // Clean up declined drivers tracking for final states
+      if (
+        data.status === OrderStatus.DELIVERED ||
+        data.status === OrderStatus.CANCELLED
+      ) {
+        this.cleanupOrderTracking(data.orderId);
+      }
+
       // Broadcast status update to all users in the order room
       const roomName = `order_${data.orderId}`;
       this.server.to(roomName).emit('order-status-updated', {
@@ -151,6 +160,9 @@ export class OrdersGateway implements OnGatewayConnection, OnGatewayDisconnect {
       const roomName = `order_${data.orderId}`;
       await client.join(roomName);
 
+      // Clear declined drivers for this order since it's now assigned
+      this.declinedDrivers.delete(data.orderId);
+
       // Notify all parties in the order room
       this.server.to(roomName).emit('driver-assigned', {
         orderId: data.orderId,
@@ -178,6 +190,12 @@ export class OrdersGateway implements OnGatewayConnection, OnGatewayDisconnect {
         client.emit('error', { message: 'Only drivers can decline orders' });
         return;
       }
+
+      // Track declined driver for this order
+      if (!this.declinedDrivers.has(data.orderId)) {
+        this.declinedDrivers.set(data.orderId, new Set());
+      }
+      this.declinedDrivers.get(data.orderId)!.add(client.user.id);
 
       // Continue searching for other drivers
       this.searchForAvailableDriver(data.orderId);
@@ -232,6 +250,27 @@ export class OrdersGateway implements OnGatewayConnection, OnGatewayDisconnect {
         return;
       }
 
+      // Filter out drivers who have already declined this order
+      const declinedDriverIds = this.declinedDrivers.get(orderId) || new Set();
+      const eligibleDrivers = availableDrivers.filter(
+        (driver) => !declinedDriverIds.has(driver.id),
+      );
+
+      if (eligibleDrivers.length === 0) {
+        this.logger.warn(
+          `No eligible drivers left for order ${orderId} (all have declined)`,
+        );
+        // Consider cancelling the order or implementing fallback logic
+        setTimeout(
+          // eslint-disable-next-line @typescript-eslint/no-misused-promises
+          async () => {
+            await this.cancelOrderAfterTimeout(orderId);
+          },
+          5 * 60 * 1000,
+        ); // Cancel after 5 minutes if no drivers left
+        return;
+      }
+
       // Get the order details
       const order = await this.ordersService.findOrderById(orderId);
       if (!order) {
@@ -239,8 +278,8 @@ export class OrdersGateway implements OnGatewayConnection, OnGatewayDisconnect {
         return;
       }
 
-      // Notify the first available driver
-      const firstDriver = availableDrivers[0];
+      // Notify the first eligible driver
+      const firstDriver = eligibleDrivers[0];
       await this.notifyDriverOrderRequest(firstDriver.id, order);
 
       // Set timeout to search for next driver if no response
@@ -256,14 +295,8 @@ export class OrdersGateway implements OnGatewayConnection, OnGatewayDisconnect {
             this.logger.log(
               `No response from driver ${firstDriver.id}, trying next driver`,
             );
-            // Remove first driver and try next
-            const remainingDrivers = availableDrivers.slice(1);
-            if (remainingDrivers.length > 0) {
-              await this.notifyDriverOrderRequest(
-                remainingDrivers[0].id,
-                order,
-              );
-            }
+            // Try next available driver
+            this.searchForAvailableDriver(orderId);
           }
         },
         5 * 60 * 1000,
@@ -291,6 +324,9 @@ export class OrdersGateway implements OnGatewayConnection, OnGatewayDisconnect {
           cancelledAt: new Date(),
         });
 
+        // Clean up declined drivers for this order
+        this.declinedDrivers.delete(orderId);
+
         this.logger.log(`Order ${orderId} cancelled due to timeout`);
       }
     } catch (error) {
@@ -304,5 +340,10 @@ export class OrdersGateway implements OnGatewayConnection, OnGatewayDisconnect {
 
   isDriverOnline(driverId: number): boolean {
     return this.driverSockets.has(driverId);
+  }
+
+  // Clean up declined drivers tracking for completed/cancelled orders
+  cleanupOrderTracking(orderId: number) {
+    this.declinedDrivers.delete(orderId);
   }
 }
