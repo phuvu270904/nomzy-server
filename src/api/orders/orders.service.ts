@@ -50,6 +50,22 @@ export class OrdersService {
 
     const savedOrder = await this.orderRepository.save(order);
 
+    // Create order items
+    if (orderItems && orderItems.length > 0) {
+      const orderItemsToCreate = orderItems.map((item) =>
+        this.orderItemRepository.create({
+          orderId: savedOrder.id,
+          productId: item.productId,
+          quantity: item.quantity,
+          unitPrice: item.unitPrice,
+          discount: item.discount || 0,
+          subtotal: item.subtotal,
+        }),
+      );
+
+      await this.orderItemRepository.save(orderItemsToCreate);
+    }
+
     // Return order with items
     const orderWithItems = await this.findOrderById(savedOrder.id);
     if (!orderWithItems) {
