@@ -77,7 +77,14 @@ export class OrdersService {
   async findOrderById(orderId: number): Promise<OrderEntity | null> {
     return this.orderRepository.findOne({
       where: { id: orderId },
-      relations: ['user', 'restaurant', 'driver', 'orderItems', 'address'],
+      relations: [
+        'user',
+        'restaurant',
+        'driver',
+        'orderItems',
+        'orderItems.product',
+        'address',
+      ],
     });
   }
 
@@ -207,7 +214,13 @@ export class OrdersService {
   async getOrdersByRestaurant(restaurantId: number): Promise<OrderEntity[]> {
     return this.orderRepository.find({
       where: { restaurantId },
-      relations: ['user', 'driver', 'orderItems', 'address'],
+      relations: [
+        'user',
+        'driver',
+        'orderItems',
+        'orderItems.product',
+        'address',
+      ],
       order: { createdAt: 'DESC' },
     });
   }
@@ -215,7 +228,13 @@ export class OrdersService {
   async getOrdersByUser(userId: number): Promise<OrderEntity[]> {
     return this.orderRepository.find({
       where: { userId },
-      relations: ['restaurant', 'driver', 'orderItems', 'address'],
+      relations: [
+        'restaurant',
+        'driver',
+        'orderItems',
+        'orderItems.product',
+        'address',
+      ],
       order: { createdAt: 'DESC' },
     });
   }
@@ -223,7 +242,13 @@ export class OrdersService {
   async getOrdersByDriver(driverId: number): Promise<OrderEntity[]> {
     return this.orderRepository.find({
       where: { driverId },
-      relations: ['user', 'restaurant', 'orderItems', 'address'],
+      relations: [
+        'user',
+        'restaurant',
+        'orderItems',
+        'orderItems.product',
+        'address',
+      ],
       order: { createdAt: 'DESC' },
     });
   }
@@ -239,7 +264,13 @@ export class OrdersService {
         userId,
         status: In(statusMap),
       },
-      relations: ['restaurant', 'driver', 'orderItems', 'address'],
+      relations: [
+        'restaurant',
+        'driver',
+        'orderItems',
+        'orderItems.product',
+        'address',
+      ],
       order: { createdAt: 'DESC' },
     });
   }
@@ -255,7 +286,13 @@ export class OrdersService {
         restaurantId,
         status: In(statusMap),
       },
-      relations: ['user', 'driver', 'orderItems', 'address'],
+      relations: [
+        'user',
+        'driver',
+        'orderItems',
+        'orderItems.product',
+        'address',
+      ],
       order: { createdAt: 'DESC' },
     });
   }
@@ -271,7 +308,13 @@ export class OrdersService {
         driverId,
         status: In(statusMap),
       },
-      relations: ['user', 'restaurant', 'orderItems', 'address'],
+      relations: [
+        'user',
+        'restaurant',
+        'orderItems',
+        'orderItems.product',
+        'address',
+      ],
       order: { createdAt: 'DESC' },
     });
   }
