@@ -218,7 +218,6 @@ export class OrdersGateway implements OnGatewayConnection, OnGatewayDisconnect {
       this.server.to(driverSocketId).emit('order-request', {
         order: order,
         message: 'New delivery request!',
-        expiresAt: new Date(Date.now() + 5 * 60 * 1000), // 5 minutes to respond
       });
     }
   }
