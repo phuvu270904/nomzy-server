@@ -80,6 +80,7 @@ export class OrdersService {
       relations: [
         'user',
         'restaurant',
+        'restaurant.addresses',
         'driver',
         'orderItems',
         'orderItems.product',

@@ -209,6 +209,42 @@ export class OrdersGateway implements OnGatewayConnection, OnGatewayDisconnect {
     }
   }
 
+  // Driver updates their location (called by driver during delivery)
+  @SubscribeMessage('driver-location-update')
+  async handleDriverLocationUpdate(
+    @ConnectedSocket() client: AuthenticatedSocket,
+    @MessageBody()
+    data: {
+      orderId: number;
+      location: { latitude: number; longitude: number };
+    },
+  ) {
+    try {
+      if (client.user?.role !== 'driver') {
+        client.emit('error', {
+          message: 'Only drivers can update their location',
+        });
+        return;
+      }
+
+      // Broadcast location update to all users in the order room
+      const roomName = `order_${data.orderId}`;
+      this.server.to(roomName).emit('driver-location-update', {
+        orderId: data.orderId,
+        driverId: client.user.id,
+        location: data.location,
+        timestamp: new Date(),
+      });
+
+      this.logger.debug(
+        `Driver ${client.user.id} location updated for order ${data.orderId}: ${data.location.latitude}, ${data.location.longitude}`,
+      );
+    } catch (error) {
+      this.logger.error('Error updating driver location:', error);
+      client.emit('error', { message: 'Failed to update location' });
+    }
+  }
+
   // Methods to be called from the service
   async notifyRestaurantNewOrder(restaurantId: number, order: OrderEntity) {
     const restaurantSocketId = this.restaurantSockets.get(restaurantId);
