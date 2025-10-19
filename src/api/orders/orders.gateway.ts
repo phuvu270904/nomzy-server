@@ -143,7 +143,7 @@ export class OrdersGateway implements OnGatewayConnection, OnGatewayDisconnect {
   @SubscribeMessage('driver-accept-order')
   async handleDriverAcceptOrder(
     @ConnectedSocket() client: AuthenticatedSocket,
-    @MessageBody() data: { orderId: number, location?: { lat: number; lng: number } },
+    @MessageBody() data: { orderId: number, location?: { latitude: number; longitude: number } },
   ) {
     try {
       if (client.user?.role !== 'driver') {
