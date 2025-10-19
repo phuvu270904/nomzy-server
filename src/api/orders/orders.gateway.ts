@@ -89,7 +89,7 @@ export class OrdersGateway implements OnGatewayConnection, OnGatewayDisconnect {
     const roomName = `order_${data.orderId}`;
     await client.join(roomName);
     this.logger.log(`User ${client.user?.id} joined room ${roomName}`);
-
+    
     client.emit('joined-order-room', { orderId: data.orderId });
   }
 
@@ -143,7 +143,7 @@ export class OrdersGateway implements OnGatewayConnection, OnGatewayDisconnect {
   @SubscribeMessage('driver-accept-order')
   async handleDriverAcceptOrder(
     @ConnectedSocket() client: AuthenticatedSocket,
-    @MessageBody() data: { orderId: number },
+    @MessageBody() data: { orderId: number, location?: { lat: number; lng: number } },
   ) {
     try {
       if (client.user?.role !== 'driver') {
@@ -168,6 +168,7 @@ export class OrdersGateway implements OnGatewayConnection, OnGatewayDisconnect {
         orderId: data.orderId,
         driverId: client.user.id,
         order: order,
+        location: data.location,
       });
 
       this.logger.log(
