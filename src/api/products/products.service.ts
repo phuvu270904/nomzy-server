@@ -57,6 +57,14 @@ export class ProductsService {
     };
   }
 
+  async findAllByRestaurant(restaurantId: number): Promise<ProductEntity[]> {
+    return this.productRepository.find({
+      where: { restaurantId },
+      relations: ['category'],
+      order: { id: 'DESC' },
+    });
+  }
+
   async findOne(id: number): Promise<ProductEntity> {
     const product = await this.productRepository.findOne({
       where: { id },

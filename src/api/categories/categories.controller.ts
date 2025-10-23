@@ -64,7 +64,7 @@ export class CategoriesController {
     return this.categoriesService.findOneProducts(id);
   }
 
-  @Roles(Role.ADMIN)
+  @Roles(Role.OWNER, Role.ADMIN)
   @ApiOperation({ summary: 'Create a new category' })
   @ApiBody({ type: CreateCategoryDto })
   @ApiResponse({
@@ -79,7 +79,7 @@ export class CategoriesController {
     return this.categoriesService.create(createCategoryDto);
   }
 
-  @Roles(Role.ADMIN)
+  @Roles(Role.ADMIN, Role.OWNER)
   @ApiOperation({ summary: 'Update a category' })
   @ApiParam({ name: 'id', description: 'Category ID', type: 'number' })
   @ApiBody({ type: UpdateCategoryDto })
@@ -97,7 +97,7 @@ export class CategoriesController {
     return this.categoriesService.update(id, updateCategoryDto);
   }
 
-  @Roles(Role.ADMIN)
+  @Roles(Role.ADMIN, Role.OWNER)
   @ApiOperation({ summary: 'Delete a category' })
   @ApiParam({ name: 'id', description: 'Category ID', type: 'number' })
   @ApiResponse({

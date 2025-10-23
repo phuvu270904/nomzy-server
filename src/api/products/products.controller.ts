@@ -88,6 +88,14 @@ export class ProductsController {
     return this.productsService.findAllPaginated(paginationQuery);
   }
 
+  @Roles(Role.OWNER)
+  @ApiOperation({ summary: "Get all products of the current authenticated owner's restaurant" })
+  @ApiResponse({ status: 200, description: "Return all products belonging to the current user" })
+  @Get('me')
+  async findAllByCurrentUser(@Request() req): Promise<ProductEntity[]> {
+    return this.productsService.findAllByRestaurant(req.user.id);
+  }
+
   @ApiOperation({ summary: 'Get a product by ID' })
   @ApiParam({ name: 'id', description: 'Product ID', type: 'number' })
   @ApiResponse({
