@@ -18,6 +18,7 @@ import { RestaurantCouponsModule } from './restaurant-coupons/restaurant-coupons
 import { UserCouponsModule } from './user-coupons/user-coupons.module';
 import { CouponSentModule } from './coupon-sent/coupon-sent.module';
 import { DriverReviewsModule } from './driver-reviews/driver-reviews.module';
+import { DriverFeedbacksModule } from './driver-feedbacks/driver-feedbacks.module';
 import { FavoritesModule } from './favorites/favorites.module';
 import { FaqsModule } from './faqs/faqs.module';
 import { OrdersModule } from './orders/orders.module';
@@ -43,6 +44,7 @@ import { OrdersModule } from './orders/orders.module';
     UserCouponsModule,
     CouponSentModule,
     DriverReviewsModule,
+    DriverFeedbacksModule,
     FavoritesModule,
     FaqsModule,
     OrdersModule,
