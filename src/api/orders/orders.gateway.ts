@@ -264,15 +264,13 @@ export class OrdersGateway implements OnGatewayConnection, OnGatewayDisconnect {
       this.logger.warn(`Restaurant ${restaurantId} is not connected via WebSocket`);
     }
 
+    const serverSockets = this.server.sockets as unknown as Map<string, Socket>;
+
     // Also add restaurant to the order room
     const roomName = `order_${order.id}`;
-    if (restaurantSocketId && this.server.sockets?.sockets) {
-      console.log("aaaaaaa");
-      
-      const restaurantSocket = this.server.sockets.sockets.get(restaurantSocketId);
+    if (restaurantSocketId && serverSockets) {
+      const restaurantSocket = serverSockets.get(restaurantSocketId);
       if (restaurantSocket) {
-        console.log("aaaaaa 2");
-        
         await restaurantSocket.join(roomName);
         this.logger.log(`Restaurant ${restaurantId} joined room ${roomName}`);
       }

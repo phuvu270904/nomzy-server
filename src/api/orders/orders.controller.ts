@@ -50,6 +50,16 @@ export class OrdersController {
     // Automatically confirm the order (as per requirements)
     const confirmedOrder = await this.ordersService.confirmOrder(order.id);
 
+    // Notify everyone in the order room about the confirmation
+    const roomName = `order_${confirmedOrder.id}`;
+    this.ordersGateway.server.to(roomName).emit('order-status-updated', {
+      orderId: confirmedOrder.id,
+      status: confirmedOrder.status,
+      updatedBy: 'system',
+      updatedAt: new Date(),
+      order: confirmedOrder,
+    });
+
     // Start searching for drivers after 30 seconds to give restaurant time to prepare
     setTimeout(() => {
       void this.ordersGateway.searchForAvailableDriver(confirmedOrder.id);
