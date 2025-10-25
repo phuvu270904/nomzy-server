@@ -5,6 +5,7 @@ import { ConfigModule } from '@nestjs/config';
 import { TypeOrmModule } from '@nestjs/typeorm';
 import ormConfig from './ormconfig';
 import { ApiModule } from './api/api.module';
+import { CloudinaryModule } from './cloudinary/cloudinary.module';
 
 @Module({
   imports: [
@@ -17,6 +18,7 @@ import { ApiModule } from './api/api.module';
     }),
     TypeOrmModule.forRoot(ormConfig),
     ApiModule,
+    CloudinaryModule,
   ],
   controllers: [AppController],
   providers: [AppService],
