@@ -248,32 +248,52 @@ export class OrdersGateway implements OnGatewayConnection, OnGatewayDisconnect {
 
   // Methods to be called from the service
   async notifyRestaurantNewOrder(restaurantId: number, order: OrderEntity) {
+    if (!this.server) {
+      this.logger.warn('WebSocket server not initialized yet, cannot notify restaurant');
+      return;
+    }
+
     const restaurantSocketId = this.restaurantSockets.get(restaurantId);
     if (restaurantSocketId) {
       this.server.to(restaurantSocketId).emit('new-order', {
         order: order,
         message: 'New order received!',
       });
+      this.logger.log(`Notified restaurant ${restaurantId} about new order ${order.id}`);
+    } else {
+      this.logger.warn(`Restaurant ${restaurantId} is not connected via WebSocket`);
     }
 
     // Also add restaurant to the order room
     const roomName = `order_${order.id}`;
-    if (restaurantSocketId) {
-      const restaurantSocket =
-        this.server.sockets.sockets.get(restaurantSocketId);
+    if (restaurantSocketId && this.server.sockets?.sockets) {
+      console.log("aaaaaaa");
+      
+      const restaurantSocket = this.server.sockets.sockets.get(restaurantSocketId);
       if (restaurantSocket) {
+        console.log("aaaaaa 2");
+        
         await restaurantSocket.join(roomName);
+        this.logger.log(`Restaurant ${restaurantId} joined room ${roomName}`);
       }
     }
   }
 
   async notifyDriverOrderRequest(driverId: number, order: OrderEntity) {
+    if (!this.server) {
+      this.logger.warn('WebSocket server not initialized yet, cannot notify driver');
+      return;
+    }
+
     const driverSocketId = this.driverSockets.get(driverId);
     if (driverSocketId) {
       this.server.to(driverSocketId).emit('order-request', {
         order: order,
         message: 'New delivery request!',
       });
+      this.logger.log(`Notified driver ${driverId} about order ${order.id}`);
+    } else {
+      this.logger.warn(`Driver ${driverId} is not connected via WebSocket`);
     }
   }
 

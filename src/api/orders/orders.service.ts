@@ -147,7 +147,6 @@ export class OrdersService {
     }
 
     order.driverId = driverId;
-    order.status = OrderStatus.PREPARING;
 
     const updatedOrder = await this.orderRepository.save(order);
     const orderWithRelations = await this.findOrderById(updatedOrder.id);
