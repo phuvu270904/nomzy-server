@@ -32,6 +32,13 @@ export class CreateNotificationDto {
   @IsUrl()
   image?: string;
 
+  @ApiProperty({
+    description: 'ID of the user to whom the notification is addressed',
+    example: 42,
+  })
+  @IsNotEmpty()
+  userId: number;
+
   @ApiPropertyOptional({
     description: 'Whether the notification is active',
     default: true,
