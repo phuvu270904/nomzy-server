@@ -13,7 +13,7 @@ export class NotificationsService {
   ) {}
 
   async findAll(userId: number): Promise<NotificationEntity[]> {
-    return this.notificationRepository.find({ where: { userId } });
+    return this.notificationRepository.find({ where: { userId }, order: { createdAt: 'DESC' } });
   }
 
   async findOne(id: number): Promise<NotificationEntity> {
