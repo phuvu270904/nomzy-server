@@ -2,6 +2,8 @@ import {
   Injectable,
   NotFoundException,
   BadRequestException,
+  Inject,
+  forwardRef,
 } from '@nestjs/common';
 import { InjectRepository } from '@nestjs/typeorm';
 import { Repository, In } from 'typeorm';
@@ -10,10 +12,13 @@ import { OrderItemEntity } from './entities/order-item.entity';
 import { UserEntity, UserRole } from '../users/entities/user.entity';
 import { CreateOrderDto } from './dto/create-order.dto';
 import { OrderType } from './dto/order-type.dto';
+import { OrdersGateway } from './orders.gateway';
 
 @Injectable()
 export class OrdersService {
   constructor(
+    @Inject(forwardRef(() => OrdersGateway))
+    private readonly ordersGateway: OrdersGateway,
     @InjectRepository(OrderEntity)
     private readonly orderRepository: Repository<OrderEntity>,
     @InjectRepository(OrderItemEntity)
@@ -147,6 +152,17 @@ export class OrdersService {
     }
 
     order.driverId = driverId;
+    order.status = OrderStatus.PREPARING;
+
+    const roomName = `order_${orderId}`;
+    this.ordersGateway.server.to(roomName).emit('order-status-updated', {
+      orderId,
+      status: order.status,
+      updatedBy: 'system',
+      updatedAt: new Date(),
+      order,
+    });
+
 
     const updatedOrder = await this.orderRepository.save(order);
     const orderWithRelations = await this.findOrderById(updatedOrder.id);

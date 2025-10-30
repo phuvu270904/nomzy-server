@@ -8,7 +8,7 @@ import {
   OnGatewayDisconnect,
 } from '@nestjs/websockets';
 import { Server, Socket } from 'socket.io';
-import { Injectable, Logger } from '@nestjs/common';
+import { Injectable, Logger, Inject, forwardRef } from '@nestjs/common';
 import { OrdersService } from './orders.service';
 import { OrderEntity, OrderStatus } from './entities/order.entity';
 
@@ -37,7 +37,10 @@ export class OrdersGateway implements OnGatewayConnection, OnGatewayDisconnect {
   private restaurantSockets = new Map<number, string>(); // restaurantId -> socketId
   private declinedDrivers = new Map<number, Set<number>>(); // orderId -> Set<driverId>
 
-  constructor(private readonly ordersService: OrdersService) {}
+  constructor(
+    @Inject(forwardRef(() => OrdersService))
+    private readonly ordersService: OrdersService,
+  ) {}
 
   async handleConnection(client: AuthenticatedSocket) {
     try {
