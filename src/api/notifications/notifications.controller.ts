@@ -8,6 +8,7 @@ import {
   Param,
   Post,
   Put,
+  Request,
 } from '@nestjs/common';
 import { NotificationsService } from './notifications.service';
 import { CreateNotificationDto } from './dto/create-notification.dto';
@@ -37,8 +38,8 @@ export class NotificationsController {
     type: [NotificationEntity],
   })
   @Get()
-  async findAll(): Promise<NotificationEntity[]> {
-    return this.notificationsService.findAll();
+  async findAll(@Request() req): Promise<NotificationEntity[]> {
+    return this.notificationsService.findAll(req.user.id);
   }
 
   @ApiOperation({ summary: 'Get a notification by ID' })

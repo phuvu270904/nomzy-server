@@ -12,8 +12,8 @@ export class NotificationsService {
     private readonly notificationRepository: Repository<NotificationEntity>,
   ) {}
 
-  async findAll(): Promise<NotificationEntity[]> {
-    return this.notificationRepository.find();
+  async findAll(userId: number): Promise<NotificationEntity[]> {
+    return this.notificationRepository.find({ where: { userId } });
   }
 
   async findOne(id: number): Promise<NotificationEntity> {

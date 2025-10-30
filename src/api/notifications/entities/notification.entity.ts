@@ -1,4 +1,5 @@
-import { Column, Entity, PrimaryGeneratedColumn } from 'typeorm';
+import { UserEntity } from 'src/api/users/entities/user.entity';
+import { Column, Entity, ManyToOne, PrimaryGeneratedColumn } from 'typeorm';
 
 @Entity('notifications')
 export class NotificationEntity {
@@ -13,6 +14,15 @@ export class NotificationEntity {
 
   @Column({ nullable: true })
   image: string;
+
+  @Column()
+  userId: number;
+
+  @ManyToOne(() => UserEntity)
+  user: UserEntity;
+
+  @Column({ default: false })
+  isRead: boolean;
 
   @Column({ default: true })
   isActive: boolean;
