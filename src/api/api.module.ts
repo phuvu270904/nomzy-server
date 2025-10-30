@@ -22,6 +22,7 @@ import { DriverFeedbacksModule } from './driver-feedbacks/driver-feedbacks.modul
 import { FavoritesModule } from './favorites/favorites.module';
 import { FaqsModule } from './faqs/faqs.module';
 import { OrdersModule } from './orders/orders.module';
+import { ConversationsModule } from './conversations/conversations.module';
 
 @Module({
   imports: [
@@ -48,6 +49,7 @@ import { OrdersModule } from './orders/orders.module';
     FavoritesModule,
     FaqsModule,
     OrdersModule,
+    ConversationsModule,
   ],
 })
 export class ApiModule {}
