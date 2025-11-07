@@ -25,8 +25,8 @@ export class CreateFeedbackDto {
     example: 'Great food and excellent service! Will definitely come back.',
   })
   @IsString()
-  @IsNotEmpty()
-  review: string;
+  @IsOptional()
+  review?: string;
 
   @ApiProperty({
     description: 'Whether the review should be posted anonymously',
