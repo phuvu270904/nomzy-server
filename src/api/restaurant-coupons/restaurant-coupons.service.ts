@@ -166,7 +166,7 @@ export class RestaurantCouponsService {
     return this.findOne(id);
   }
 
-  async remove(id: number, restaurantId: number): Promise<void> {
+  async remove(id: number, restaurantId: number) {
     const restaurantCoupon = await this.restaurantCouponRepository.findOne({
       where: { id, restaurantId },
     });
@@ -176,5 +176,7 @@ export class RestaurantCouponsService {
     }
 
     await this.restaurantCouponRepository.remove(restaurantCoupon);
+    await this.couponsService.remove(restaurantCoupon.couponId);
+    return { message: 'Restaurant coupon removed successfully' };
   }
 }
