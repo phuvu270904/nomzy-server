@@ -41,6 +41,16 @@ export class RestaurantCouponsController {
     return this.restaurantCouponsService.findAllByRestaurant(req.user.id);
   }
 
+  @Get('all')
+  async findAllCoupons() {
+    return this.restaurantCouponsService.findAllCoupons();
+  }
+
+  @Get('restaurant/:restaurantId')
+  async findAllByRestaurant(@Param('restaurantId') restaurantId: number) {
+    return this.restaurantCouponsService.findAllByRestaurant(restaurantId);
+  }
+
   @Get(':id')
   @Roles(Role.OWNER)
   async findOne(@Param('id') id: number) {

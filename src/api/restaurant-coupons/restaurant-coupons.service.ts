@@ -85,6 +85,12 @@ export class RestaurantCouponsService {
     });
   }
 
+  findAllCoupons(): Promise<RestaurantCouponEntity[]> {
+    return this.restaurantCouponRepository.find({
+      relations: ['coupon', 'restaurant'],
+    });
+  }
+
   async findOne(id: number): Promise<RestaurantCouponEntity> {
     const restaurantCoupon = await this.restaurantCouponRepository.findOne({
       where: { id },
