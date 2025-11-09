@@ -89,21 +89,30 @@ export class DriverReviewsService {
     return reviews.map((review) => this.mapToResponseDto(review));
   }
 
-  async findByUser(userId: number): Promise<DriverReviewResponseDto[]> {
-    const user = await this.userRepository.findOne({
-      where: { id: userId },
+  async findByUser(driverId: number): Promise<DriverReviewResponseDto[]> {
+    const driver = await this.userRepository.findOne({
+      where: { id: driverId, role: UserRole.DRIVER },
     });
 
-    if (!user) {
-      throw new NotFoundException('User not found');
+    if (!driver) {
+      throw new NotFoundException('Driver not found');
     }
 
     const reviews = await this.driverReviewRepository.find({
-      where: { userId },
+      where: { driverId },
       relations: ['user', 'driver'],
     });
 
     return reviews.map((review) => this.mapToResponseDto(review));
+  }
+
+  findByUserCreated(userId: number): Promise<DriverReviewResponseDto[]> {
+    return this.driverReviewRepository
+      .find({
+        where: { userId },
+        relations: ['user', 'driver'],
+      })
+      .then((reviews) => reviews.map((review) => this.mapToResponseDto(review)));
   }
 
   async findOne(id: number): Promise<DriverReviewResponseDto> {

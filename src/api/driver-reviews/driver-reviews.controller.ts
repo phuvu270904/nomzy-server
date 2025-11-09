@@ -97,6 +97,18 @@ export class DriverReviewsController {
     return this.driverReviewsService.findByUser(req.user.id);
   }
 
+  @Get('byUser')
+  @ApiBearerAuth('access-token')
+  @ApiOperation({ summary: 'Get all reviews created by the current user' })
+  @ApiResponse({
+    status: 200,
+    description: 'Returns user reviews',
+    type: [DriverReviewResponseDto],
+  })
+  findByUserCreated(@Req() req): Promise<DriverReviewResponseDto[]> {
+    return this.driverReviewsService.findByUserCreated(req.user.id);
+  }
+
   @Get(':id')
   @ApiOperation({ summary: 'Get a specific driver review by ID' })
   @ApiParam({ name: 'id', type: Number, description: 'ID of the review' })
