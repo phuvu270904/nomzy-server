@@ -19,8 +19,11 @@ import { UserVehiclesService } from './user-vehicles.service';
 import { CreateUserVehicleDto } from './dto/create-user-vehicle.dto';
 import { UpdateUserVehicleDto } from './dto/update-user-vehicle.dto';
 import { UserVehicleEntity } from './entities/user-vehicle.entity';
+import { Roles } from 'src/roles/roles.decorator';
+import { Role } from 'src/roles/role.enum';
 
 @ApiTags('User Vehicles')
+@Roles(Role.DRIVER)
 @Controller('user-vehicles')
 @ApiBearerAuth('access-token')
 export class UserVehiclesController {
