@@ -44,7 +44,7 @@ export class UserVehicleEntity {
     @IsNotEmpty()
     regNumber: string;
 
-    @Column({ type: 'varchar', length: 50 })
+    @Column({ type: 'text' })
     @IsString()
     @IsNotEmpty()
     license: string;
