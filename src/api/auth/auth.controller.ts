@@ -18,6 +18,7 @@ import { ResetPasswordDto } from './dto/resetPassword.dto';
 import { ApiTags, ApiOperation, ApiBody, ApiBearerAuth } from '@nestjs/swagger';
 import { RegisterDto } from './dto/register.dto';
 import { RefreshTokenDto } from './dto/refreshToken.dto';
+import { UpdateProfileDto } from './dto/updateProfile.dto';
 
 @ApiTags('Auth')
 @Controller('auth')
@@ -119,10 +120,12 @@ export class AuthController {
     return this.authService.changePassword(req.user, changePasswordDto);
   }
 
+  @ApiOperation({ summary: 'Update current user profile' })
+  @ApiBody({ type: UpdateProfileDto })
   @ApiBearerAuth('access-token')
   @Post('updateProfile')
-  async updateProfile(@Request() req, @Body() UpdateUserDto: UpdateUserDto) {
-    return this.authService.updateProfile(req.user, UpdateUserDto);
+  async updateProfile(@Request() req, @Body() updateProfileDto: UpdateProfileDto) {
+    return this.authService.updateProfile(req.user, updateProfileDto);
   }
 
   @Public()

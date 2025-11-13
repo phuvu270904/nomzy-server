@@ -15,6 +15,7 @@ import * as nodemailer from 'nodemailer';
 import { google } from 'googleapis';
 import { ResetPasswordDto } from './dto/resetPassword.dto';
 import { RegisterDto } from './dto/register.dto';
+import { UpdateProfileDto } from './dto/updateProfile.dto';
 
 @Injectable()
 export class AuthService {
@@ -374,7 +375,7 @@ export class AuthService {
     }
   }
 
-  async updateProfile(user: any, updateUserDto: UpdateUserDto) {
+  async updateProfile(user: any, updateProfileDto: UpdateProfileDto) {
     try {
       const userMatched = await this.usersService.findOne(user.id);
 
@@ -382,11 +383,26 @@ export class AuthService {
         throw new NotFoundException('User not found');
       }
 
-      await this.usersService.update(user.id, updateUserDto);
+      // Update only the fields provided in the DTO
+      const updateData: any = {};
+      if (updateProfileDto.name !== undefined) updateData.name = updateProfileDto.name;
+      if (updateProfileDto.gender !== undefined) updateData.gender = updateProfileDto.gender;
+      if (updateProfileDto.phone_number !== undefined) updateData.phone_number = updateProfileDto.phone_number;
+      if (updateProfileDto.avatar !== undefined) updateData.avatar = updateProfileDto.avatar;
+
+      await this.usersService.update(user.id, updateData);
+
+      // Return updated user profile without password
+      const updatedUser = await this.usersService.findOne(user.id);
+      if (!updatedUser) {
+        throw new NotFoundException('User not found after update');
+      }
+      const { password, ...result } = updatedUser;
 
       return {
         status: 200,
         message: 'Profile updated successfully',
+        user: result,
       };
     } catch (error) {
       throw new UnauthorizedException(error.message || 'Profile update failed');
