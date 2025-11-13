@@ -13,6 +13,14 @@ export class CreateUserVehicleDto {
   type: VehicleType;
 
   @ApiProperty({ 
+    example: 'Honda CBR',
+    description: 'Vehicle name'
+  })
+  @IsString()
+  @IsNotEmpty()
+  vehName: string;
+
+  @ApiProperty({ 
     example: 'ABC-1234',
     description: 'Vehicle registration number'
   })
