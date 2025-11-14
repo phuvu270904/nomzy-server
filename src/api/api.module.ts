@@ -22,6 +22,7 @@ import { FaqsModule } from './faqs/faqs.module';
 import { OrdersModule } from './orders/orders.module';
 import { ConversationsModule } from './conversations/conversations.module';
 import { UserVehiclesModule } from './user-vehicles/user-vehicles.module';
+import { AiSuggestModule } from './ai-suggest/ai-suggest.module';
 
 @Module({
   imports: [
@@ -48,6 +49,7 @@ import { UserVehiclesModule } from './user-vehicles/user-vehicles.module';
     OrdersModule,
     ConversationsModule,
     UserVehiclesModule,
+    AiSuggestModule,
   ],
 })
 export class ApiModule {}
