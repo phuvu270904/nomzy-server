@@ -7,6 +7,7 @@ import ormConfig from './ormconfig';
 import { ApiModule } from './api/api.module';
 import { CloudinaryModule } from './cloudinary/cloudinary.module';
 import { RedisModule } from './redis/redis.module';
+import { EmailModule } from './email/email.module';
 
 @Module({
   imports: [
@@ -19,6 +20,7 @@ import { RedisModule } from './redis/redis.module';
     }),
     TypeOrmModule.forRoot(ormConfig),
     RedisModule,
+    EmailModule,
     ApiModule,
     CloudinaryModule,
   ],

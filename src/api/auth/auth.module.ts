@@ -10,6 +10,7 @@ import { AuthGuard } from './auth.guard';
 import { GoogleStrategy } from './google.strategy';
 import { RolesGuard } from 'src/roles/roles.guard';
 import { RedisModule } from 'src/redis/redis.module';
+import { EmailModule } from 'src/email/email.module';
 
 @Module({
   imports: [
@@ -20,6 +21,7 @@ import { RedisModule } from 'src/redis/redis.module';
     TypeOrmModule.forFeature([UserEntity]),
     UsersModule,
     RedisModule,
+    EmailModule,
   ],
   controllers: [AuthController],
   providers: [

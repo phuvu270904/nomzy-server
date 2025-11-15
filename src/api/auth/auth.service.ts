@@ -11,14 +11,13 @@ import * as bcrypt from 'bcrypt';
 import { JwtService } from '@nestjs/jwt';
 import { ChangePasswordDto } from './dto/changePassword.dto';
 import { UpdateUserDto } from '../users/dto/updateUser.dto';
-import * as nodemailer from 'nodemailer';
-import { google } from 'googleapis';
 import { ResetPasswordDto } from './dto/resetPassword.dto';
 import { RegisterDto } from './dto/register.dto';
 import { UpdateProfileDto } from './dto/updateProfile.dto';
 import { RedisService } from 'src/redis/redis.service';
 import { SendVerificationCodeDto } from './dto/sendVerificationCode.dto';
 import { VerifyEmailDto } from './dto/verifyEmail.dto';
+import { EmailService } from 'src/email/email.service';
 
 @Injectable()
 export class AuthService {
@@ -26,6 +25,7 @@ export class AuthService {
     private readonly usersService: UsersService,
     private jwtService: JwtService,
     private readonly redisService: RedisService,
+    private readonly emailService: EmailService,
   ) {}
 
   async profile(user: any) {
@@ -240,38 +240,7 @@ export class AuthService {
   }
 
   private async sendVerificationEmail(email: string, code: string) {
-    const oAuth2Client = new google.auth.OAuth2(
-      process.env.MAILER_CLIENT_ID,
-      process.env.MAILER_CLIENT_SECRET,
-      process.env.MAILER_REDIRECT_URI,
-    );
-    oAuth2Client.setCredentials({
-      refresh_token: process.env.MAILER_REFRESH_TOKEN,
-    });
-    const accessToken = await oAuth2Client.getAccessToken();
-    const transporter = nodemailer.createTransport({
-      service: 'gmail',
-      auth: {
-        type: 'OAuth2',
-        user: process.env.MAILER_USER,
-        clientId: process.env.MAILER_CLIENT_ID,
-        clientSecret: process.env.MAILER_CLIENT_SECRET,
-        refreshToken: process.env.MAILER_REFRESH_TOKEN,
-        accessToken: accessToken.token as string,
-      },
-    });
-
-    await transporter.sendMail({
-      from: `"Nomzy Support" ${process.env.MAILER_USER}`,
-      to: email,
-      subject: 'Email Verification Code',
-      html: `
-        <h2>Email Verification</h2>
-        <p>Your verification code is: <strong>${code}</strong></p>
-        <p>This code will expire in 5 minutes.</p>
-        <p>If you did not request this code, please ignore this email.</p>
-      `,
-    });
+    await this.emailService.sendVerificationEmail(email, code);
   }
 
   async registerUser(registerDto: RegisterDto) {
@@ -446,35 +415,7 @@ export class AuthService {
   }
 
   private async sendResetEmail(email: string, token: string) {
-    const oAuth2Client = new google.auth.OAuth2(
-      process.env.MAILER_CLIENT_ID,
-      process.env.MAILER_CLIENT_SECRET,
-      process.env.MAILER_REDIRECT_URI,
-    );
-    oAuth2Client.setCredentials({
-      refresh_token: process.env.MAILER_REFRESH_TOKEN,
-    });
-    const accessToken = await oAuth2Client.getAccessToken();
-    const transporter = nodemailer.createTransport({
-      service: 'gmail',
-      auth: {
-        type: 'OAuth2',
-        user: process.env.MAILER_USER,
-        clientId: process.env.MAILER_CLIENT_ID,
-        clientSecret: process.env.MAILER_CLIENT_SECRET,
-        refreshToken: process.env.MAILER_REFRESH_TOKEN,
-        accessToken: accessToken.token as string,
-      },
-    });
-
-    const resetUrl = `http://localhost:3000/auth/reset-password?token=${token}`;
-
-    await transporter.sendMail({
-      from: `"Support" ${process.env.MAILER_USER}`,
-      to: email,
-      subject: 'Password Reset Request',
-      text: `Click the following link to reset your password: ${resetUrl}`,
-    });
+    await this.emailService.sendPasswordResetEmail(email, token);
   }
 
   async resetPassword(resetPasswordDto: ResetPasswordDto) {
