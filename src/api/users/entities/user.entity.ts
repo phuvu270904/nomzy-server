@@ -1,4 +1,5 @@
 import {
+  IsBoolean,
   IsEmail,
   IsEnum,
   IsOptional,
@@ -77,6 +78,10 @@ export class UserEntity {
   @IsOptional()
   @IsString()
   resetToken?: string;
+
+  @Column({ type: 'boolean', default: false })
+  @IsBoolean()
+  isFullyRegistered: boolean;
 
   @OneToMany('ProductEntity', 'restaurant', { cascade: true })
   products?: ProductEntity[];
