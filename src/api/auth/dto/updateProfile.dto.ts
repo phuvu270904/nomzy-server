@@ -1,5 +1,5 @@
 import { ApiProperty } from '@nestjs/swagger';
-import { IsEnum, IsOptional, IsPhoneNumber, IsString } from 'class-validator';
+import { IsBoolean, IsEnum, IsOptional, IsPhoneNumber, IsString } from 'class-validator';
 import { Gender } from 'src/api/users/entities/user.entity';
 
 export class UpdateProfileDto {
@@ -39,4 +39,13 @@ export class UpdateProfileDto {
   @IsString()
   @IsOptional()
   avatar?: string;
+
+  @ApiProperty({
+    example: true,
+    description: 'Indicates if the user has completed full registration',
+    required: false,
+  })
+  @IsOptional()
+  @IsBoolean()
+  isFullyRegistered?: boolean;
 }

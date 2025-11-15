@@ -478,6 +478,7 @@ export class AuthService {
       if (updateProfileDto.gender !== undefined) updateData.gender = updateProfileDto.gender;
       if (updateProfileDto.phone_number !== undefined) updateData.phone_number = updateProfileDto.phone_number;
       if (updateProfileDto.avatar !== undefined) updateData.avatar = updateProfileDto.avatar;
+      if (updateProfileDto.isFullyRegistered !== undefined) updateData.isFullyRegistered = updateProfileDto.isFullyRegistered;
 
       await this.usersService.update(user.id, updateData);
 
