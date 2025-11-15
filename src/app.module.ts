@@ -6,6 +6,7 @@ import { TypeOrmModule } from '@nestjs/typeorm';
 import ormConfig from './ormconfig';
 import { ApiModule } from './api/api.module';
 import { CloudinaryModule } from './cloudinary/cloudinary.module';
+import { RedisModule } from './redis/redis.module';
 
 @Module({
   imports: [
@@ -17,6 +18,7 @@ import { CloudinaryModule } from './cloudinary/cloudinary.module';
         : '.env',
     }),
     TypeOrmModule.forRoot(ormConfig),
+    RedisModule,
     ApiModule,
     CloudinaryModule,
   ],
