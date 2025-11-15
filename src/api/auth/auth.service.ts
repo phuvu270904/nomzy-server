@@ -16,12 +16,16 @@ import { google } from 'googleapis';
 import { ResetPasswordDto } from './dto/resetPassword.dto';
 import { RegisterDto } from './dto/register.dto';
 import { UpdateProfileDto } from './dto/updateProfile.dto';
+import { RedisService } from 'src/redis/redis.service';
+import { SendVerificationCodeDto } from './dto/sendVerificationCode.dto';
+import { VerifyEmailDto } from './dto/verifyEmail.dto';
 
 @Injectable()
 export class AuthService {
   constructor(
     private readonly usersService: UsersService,
     private jwtService: JwtService,
+    private readonly redisService: RedisService,
   ) {}
 
   async profile(user: any) {
@@ -189,28 +193,172 @@ export class AuthService {
     };
   }
 
+  async sendVerificationCode(sendVerificationCodeDto: SendVerificationCodeDto) {
+    const { email } = sendVerificationCodeDto;
+
+    // Check if user already exists
+    const existingUser = await this.usersService.findByEmail(email);
+    if (existingUser) {
+      throw new BadRequestException('Email is already registered');
+    }
+
+    // Generate 6-digit verification code
+    const verificationCode = Math.floor(100000 + Math.random() * 900000).toString();
+
+    // Store verification code in Redis with 5 minutes expiration
+    const redisKey = `email_verification:${email}`;
+    await this.redisService.setex(redisKey, 300, verificationCode); // 300 seconds = 5 minutes
+
+    // Send email with verification code
+    await this.sendVerificationEmail(email, verificationCode);
+
+    return {
+      status: 200,
+      message: 'Verification code sent to email',
+    };
+  }
+
+  async verifyEmail(verifyEmailDto: VerifyEmailDto) {
+    const { email, code } = verifyEmailDto;
+
+    // Get stored verification code from Redis
+    const redisKey = `email_verification:${email}`;
+    const storedCode = await this.redisService.get(redisKey);
+
+    if (!storedCode) {
+      throw new BadRequestException('Verification code has expired or does not exist');
+    }
+
+    if (storedCode !== code) {
+      throw new BadRequestException('Invalid verification code');
+    }
+
+    return {
+      status: 200,
+      message: 'Email verified successfully',
+    };
+  }
+
+  private async sendVerificationEmail(email: string, code: string) {
+    const oAuth2Client = new google.auth.OAuth2(
+      process.env.MAILER_CLIENT_ID,
+      process.env.MAILER_CLIENT_SECRET,
+      process.env.MAILER_REDIRECT_URI,
+    );
+    oAuth2Client.setCredentials({
+      refresh_token: process.env.MAILER_REFRESH_TOKEN,
+    });
+    const accessToken = await oAuth2Client.getAccessToken();
+    const transporter = nodemailer.createTransport({
+      service: 'gmail',
+      auth: {
+        type: 'OAuth2',
+        user: process.env.MAILER_USER,
+        clientId: process.env.MAILER_CLIENT_ID,
+        clientSecret: process.env.MAILER_CLIENT_SECRET,
+        refreshToken: process.env.MAILER_REFRESH_TOKEN,
+        accessToken: accessToken.token as string,
+      },
+    });
+
+    await transporter.sendMail({
+      from: `"Nomzy Support" ${process.env.MAILER_USER}`,
+      to: email,
+      subject: 'Email Verification Code',
+      html: `
+        <h2>Email Verification</h2>
+        <p>Your verification code is: <strong>${code}</strong></p>
+        <p>This code will expire in 5 minutes.</p>
+        <p>If you did not request this code, please ignore this email.</p>
+      `,
+    });
+  }
+
   async registerUser(registerDto: RegisterDto) {
+    // Verify the verification code
+    const redisKey = `email_verification:${registerDto.email}`;
+    const storedCode = await this.redisService.get(redisKey);
+
+    if (!storedCode) {
+      throw new BadRequestException('Verification code has expired or does not exist');
+    }
+
+    if (storedCode !== registerDto.verificationCode) {
+      throw new BadRequestException('Invalid verification code');
+    }
+
+    // Remove verification code from DTO before creating user
+    const { verificationCode, ...userDataWithoutCode } = registerDto;
+
     const newUserRole = {
-      ...registerDto,
+      ...userDataWithoutCode,
       role: 'user',
     };
-    return this.usersService.create(newUserRole);
+    
+    const result = await this.usersService.create(newUserRole);
+
+    // Delete the verification code from Redis after successful registration
+    await this.redisService.del(redisKey);
+
+    return result;
   }
 
   async registerDriver(registerDto: RegisterDto) {
+    // Verify the verification code
+    const redisKey = `email_verification:${registerDto.email}`;
+    const storedCode = await this.redisService.get(redisKey);
+
+    if (!storedCode) {
+      throw new BadRequestException('Verification code has expired or does not exist');
+    }
+
+    if (storedCode !== registerDto.verificationCode) {
+      throw new BadRequestException('Invalid verification code');
+    }
+
+    // Remove verification code from DTO before creating user
+    const { verificationCode, ...userDataWithoutCode } = registerDto;
+
     const newUserRole = {
-      ...registerDto,
+      ...userDataWithoutCode,
       role: 'driver',
     };
-    return this.usersService.create(newUserRole);
+    
+    const result = await this.usersService.create(newUserRole);
+
+    // Delete the verification code from Redis after successful registration
+    await this.redisService.del(redisKey);
+
+    return result;
   }
 
   async registerOwner(registerDto: RegisterDto) {
+    // Verify the verification code
+    const redisKey = `email_verification:${registerDto.email}`;
+    const storedCode = await this.redisService.get(redisKey);
+
+    if (!storedCode) {
+      throw new BadRequestException('Verification code has expired or does not exist');
+    }
+
+    if (storedCode !== registerDto.verificationCode) {
+      throw new BadRequestException('Invalid verification code');
+    }
+
+    // Remove verification code from DTO before creating user
+    const { verificationCode, ...userDataWithoutCode } = registerDto;
+
     const newUserRole = {
-      ...registerDto,
+      ...userDataWithoutCode,
       role: 'owner',
     };
-    return this.usersService.create(newUserRole);
+    
+    const result = await this.usersService.create(newUserRole);
+
+    // Delete the verification code from Redis after successful registration
+    await this.redisService.del(redisKey);
+
+    return result;
   }
 
   async logout(user: any) {

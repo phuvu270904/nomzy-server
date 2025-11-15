@@ -9,6 +9,7 @@ import { APP_GUARD } from '@nestjs/core';
 import { AuthGuard } from './auth.guard';
 import { GoogleStrategy } from './google.strategy';
 import { RolesGuard } from 'src/roles/roles.guard';
+import { RedisModule } from 'src/redis/redis.module';
 
 @Module({
   imports: [
@@ -18,6 +19,7 @@ import { RolesGuard } from 'src/roles/roles.guard';
     }),
     TypeOrmModule.forFeature([UserEntity]),
     UsersModule,
+    RedisModule,
   ],
   controllers: [AuthController],
   providers: [

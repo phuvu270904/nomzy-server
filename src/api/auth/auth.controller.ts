@@ -19,6 +19,8 @@ import { ApiTags, ApiOperation, ApiBody, ApiBearerAuth } from '@nestjs/swagger';
 import { RegisterDto } from './dto/register.dto';
 import { RefreshTokenDto } from './dto/refreshToken.dto';
 import { UpdateProfileDto } from './dto/updateProfile.dto';
+import { SendVerificationCodeDto } from './dto/sendVerificationCode.dto';
+import { VerifyEmailDto } from './dto/verifyEmail.dto';
 
 @ApiTags('Auth')
 @Controller('auth')
@@ -62,6 +64,22 @@ export class AuthController {
   @Post('login/owner')
   async ownerLogin(@Body() loginDto: LoginDto) {
     return this.authService.ownerLogin(loginDto);
+  }
+
+  @ApiOperation({ summary: 'Send email verification code' })
+  @ApiBody({ type: SendVerificationCodeDto })
+  @Public()
+  @Post('send-verification-code')
+  async sendVerificationCode(@Body() sendVerificationCodeDto: SendVerificationCodeDto) {
+    return this.authService.sendVerificationCode(sendVerificationCodeDto);
+  }
+
+  @ApiOperation({ summary: 'Verify email with code' })
+  @ApiBody({ type: VerifyEmailDto })
+  @Public()
+  @Post('verify-email')
+  async verifyEmail(@Body() verifyEmailDto: VerifyEmailDto) {
+    return this.authService.verifyEmail(verifyEmailDto);
   }
 
   @ApiOperation({ summary: 'Register user account' })
