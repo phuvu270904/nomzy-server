@@ -235,6 +235,7 @@ export class OrdersService {
         'driver',
         'orderItems',
         'orderItems.product',
+        'orderItems.product.category',
         'address',
       ],
       order: { createdAt: 'DESC' },
