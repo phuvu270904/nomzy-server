@@ -177,6 +177,7 @@ export class FeedbacksService {
         id: feedback.user.id,
         name: feedback.user.name,
         email: feedback.user.email,
+        avatar: feedback.user.avatar,
       };
     }
 

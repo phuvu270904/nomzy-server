@@ -97,6 +97,18 @@ export class FeedbacksController {
     return this.feedbacksService.findByUser(req.user.id);
   }
 
+  @Get('currentRestaurant')
+  @ApiBearerAuth('access-token')
+  @ApiOperation({ summary: 'Get all feedbacks for the current restaurant user' })
+  @ApiResponse({
+    status: 200,
+    description: 'Returns feedbacks for the current restaurant',
+    type: [FeedbackResponseDto],
+  })
+  findByCurrentRestaurant(@Req() req): Promise<FeedbackResponseDto[]> {
+    return this.feedbacksService.findByRestaurant(req.user.id);
+  }
+
   @Get(':id')
   @ApiOperation({ summary: 'Get a specific feedback by ID' })
   @ApiParam({ name: 'id', type: Number, description: 'ID of the feedback' })

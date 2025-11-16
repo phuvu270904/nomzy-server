@@ -30,6 +30,7 @@ export class FeedbackResponseDto {
     id: number;
     name: string;
     email: string;
+    avatar?: string;
   };
 
   @ApiProperty({
