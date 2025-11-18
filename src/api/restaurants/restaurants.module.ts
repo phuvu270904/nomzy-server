@@ -8,10 +8,18 @@ import { FeedbacksModule } from '../feedbacks/feedbacks.module';
 import { FeedbackEntity } from '../feedbacks/entities/feedback.entity';
 import { FavoriteEntity } from '../favorites/entities/favorite.entity';
 import { FavoritesService } from '../favorites/favorites.service';
+import { ProductEntity } from '../products/entities/product.entity';
+import { RestaurantCouponEntity } from '../restaurant-coupons/entities/restaurant-coupon.entity';
 
 @Module({
   imports: [
-    TypeOrmModule.forFeature([UserEntity, FeedbackEntity, FavoriteEntity]),
+    TypeOrmModule.forFeature([
+      UserEntity,
+      FeedbackEntity,
+      FavoriteEntity,
+      ProductEntity,
+      RestaurantCouponEntity,
+    ]),
   ],
   controllers: [RestaurantsController],
   providers: [RestaurantsService, FeedbacksService, FavoritesService],

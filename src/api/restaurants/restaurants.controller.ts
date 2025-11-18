@@ -8,6 +8,7 @@ import {
   Delete,
   HttpCode,
   HttpStatus,
+  Query,
 } from '@nestjs/common';
 import { RestaurantsService } from './restaurants.service';
 import {
@@ -16,10 +17,12 @@ import {
   ApiOperation,
   ApiResponse,
   ApiParam,
+  ApiQuery,
 } from '@nestjs/swagger';
 import { UserEntity } from '../users/entities/user.entity';
 import { Roles } from 'src/roles/roles.decorator';
 import { Role } from 'src/roles/role.enum';
+import { SearchRestaurantDto } from './dto/search-restaurant.dto';
 
 @ApiBearerAuth('access-token')
 @ApiTags('Restaurants')
@@ -31,6 +34,36 @@ export class RestaurantsController {
   async getAllRestaurants(@Req() req) {
     const userId = req.user?.id; // Optional - can be null for unauthenticated users
     return this.restaurantsService.getAllRestaurants(userId);
+  }
+
+  @Get('search')
+  @ApiOperation({
+    summary: 'Search restaurants by name or product name',
+    description:
+      'Search for restaurants by their name or by products they offer. Returns restaurant details with offers/coupons.',
+  })
+  @ApiQuery({
+    name: 'query',
+    required: false,
+    description: 'Search query for restaurant name or product name',
+    example: 'pizza',
+  })
+  @ApiResponse({
+    status: 200,
+    description: 'Search results retrieved successfully',
+  })
+  async searchRestaurants(
+    @Query('query') query: string,
+    @Req() req,
+  ) {
+    const userId = req.user?.id;
+    return this.restaurantsService.searchRestaurants(query, userId);
+  }
+
+  @Roles(Role.OWNER)
+  @Get('info')
+  async getRestaurantInfo(@Req() req) {
+    return this.restaurantsService.getRestaurantInfo(req.user.id);
   }
 
   @Get(':id')
@@ -84,11 +117,5 @@ export class RestaurantsController {
       req.user.id,
       restaurantId,
     );
-  }
-
-  @Roles(Role.OWNER)
-  @Get('info')
-  async getRestaurantInfo(@Req() req) {
-    return this.restaurantsService.getRestaurantInfo(req.user.id);
   }
 }
