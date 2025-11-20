@@ -6,6 +6,7 @@ import {
   Param,
   Delete,
   Put,
+  Request,
 } from '@nestjs/common';
 import { NotificationSentService } from './notification-sent.service';
 import { CreateNotificationSentDto } from './dto/create-notification-sent.dto';
@@ -31,7 +32,7 @@ export class NotificationSentController {
     private readonly notificationSentService: NotificationSentService,
   ) {}
 
-  @ApiOperation({ summary: 'Create a new notification sending record' })
+  @ApiOperation({ summary: 'Send a new notification to users' })
   @ApiBody({ type: CreateNotificationSentDto })
   @ApiResponse({
     status: 201,
@@ -39,8 +40,14 @@ export class NotificationSentController {
     type: NotificationSentEntity,
   })
   @Post()
-  async create(@Body() createNotificationSentDto: CreateNotificationSentDto) {
-    return this.notificationSentService.create(createNotificationSentDto);
+  async create(
+    @Request() req,
+    @Body() createNotificationSentDto: CreateNotificationSentDto,
+  ) {
+    return this.notificationSentService.create(
+      createNotificationSentDto,
+      req.user.id,
+    );
   }
 
   @ApiOperation({ summary: 'Get all notification sending records' })

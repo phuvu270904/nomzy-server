@@ -8,7 +8,6 @@ import {
   JoinColumn,
 } from 'typeorm';
 import { UserEntity } from '../../users/entities/user.entity';
-import { NotificationEntity } from '../../notifications/entities/notification.entity';
 
 export enum NotificationSentType {
   ALL_USERS = 'all_users',
@@ -23,11 +22,13 @@ export class NotificationSentEntity {
   id: number;
 
   @Column()
-  notificationId: number;
+  title: string;
 
-  @ManyToOne(() => NotificationEntity, { onDelete: 'CASCADE' })
-  @JoinColumn({ name: 'notificationId' })
-  notification: NotificationEntity;
+  @Column({ type: 'text' })
+  message: string;
+
+  @Column({ nullable: true })
+  image: string;
 
   @Column({ nullable: true })
   sentToUserId: number;

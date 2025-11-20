@@ -21,6 +21,7 @@ import { RefreshTokenDto } from './dto/refreshToken.dto';
 import { UpdateProfileDto } from './dto/updateProfile.dto';
 import { SendVerificationCodeDto } from './dto/sendVerificationCode.dto';
 import { VerifyEmailDto } from './dto/verifyEmail.dto';
+import { UpdateFcmTokenDto } from './dto/updateFcmToken.dto';
 
 @ApiTags('Auth')
 @Controller('auth')
@@ -156,5 +157,20 @@ export class AuthController {
   @UseGuards(AuthGuard('google'))
   googleAuthRedirect(@Req() req) {
     return this.authService.googleLogin(req);
+  }
+
+  @ApiOperation({ summary: 'Update FCM token for current user' })
+  @ApiBody({ type: UpdateFcmTokenDto })
+  @ApiBearerAuth('access-token')
+  @Post('fcm-token')
+  async updateFcmToken(@Request() req, @Body() updateFcmTokenDto: UpdateFcmTokenDto) {
+    return this.authService.updateFcmToken(req.user, updateFcmTokenDto.fcm_token);
+  }
+
+  @ApiOperation({ summary: 'Remove FCM token for current user' })
+  @ApiBearerAuth('access-token')
+  @Post('fcm-token/remove')
+  async removeFcmToken(@Request() req) {
+    return this.authService.removeFcmToken(req.user);
   }
 }

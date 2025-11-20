@@ -13,7 +13,6 @@ import { CreateNotificationSentDto } from './dto/create-notification-sent.dto';
 import { UpdateNotificationSentDto } from './dto/update-notification-sent.dto';
 import { NotificationsService } from '../notifications/notifications.service';
 import { UsersService } from '../users/users.service';
-import { UserNotificationsService } from '../user-notifications/user-notifications.service';
 import { UserRole } from '../users/entities/user.entity';
 
 @Injectable()
@@ -23,23 +22,12 @@ export class NotificationSentService {
     private readonly notificationSentRepository: Repository<NotificationSentEntity>,
     private readonly notificationsService: NotificationsService,
     private readonly usersService: UsersService,
-    private readonly userNotificationsService: UserNotificationsService,
   ) {}
 
   async create(
     createNotificationSentDto: CreateNotificationSentDto,
+    adminUserId: number,
   ): Promise<NotificationSentEntity> {
-    // Verify notification exists
-    const notification = await this.notificationsService.findOne(
-      createNotificationSentDto.notificationId,
-    );
-
-    if (!notification) {
-      throw new NotFoundException(
-        `Notification with ID ${createNotificationSentDto.notificationId} not found`,
-      );
-    }
-
     // Validation for sentToUserId based on sentType
     if (
       (createNotificationSentDto.sentType ===
@@ -87,9 +75,11 @@ export class NotificationSentService {
       }
     }
 
-    // Create record
+    // Create notification sent record with the notification content
     const notificationSent = this.notificationSentRepository.create({
-      notificationId: createNotificationSentDto.notificationId,
+      title: createNotificationSentDto.title,
+      message: createNotificationSentDto.message,
+      image: createNotificationSentDto.image,
       sentToUserId: createNotificationSentDto.sentToUserId,
       sentType: createNotificationSentDto.sentType,
     });
@@ -98,21 +88,23 @@ export class NotificationSentService {
       await this.notificationSentRepository.save(notificationSent);
 
     // Process the notification sending based on type
-    await this.processNotificationSending(savedRecord);
+    // This will create individual notifications for each user
+    await this.processNotificationSending(savedRecord, adminUserId);
 
     return savedRecord;
   }
 
   async findAll(): Promise<NotificationSentEntity[]> {
     return this.notificationSentRepository.find({
-      relations: ['notification', 'sentToUser'],
+      relations: ['sentToUser'],
+      order: { createdAt: 'DESC' },
     });
   }
 
   async findOne(id: number): Promise<NotificationSentEntity> {
     const notificationSent = await this.notificationSentRepository.findOne({
       where: { id },
-      relations: ['notification', 'sentToUser'],
+      relations: ['sentToUser'],
     });
 
     if (!notificationSent) {
@@ -148,26 +140,41 @@ export class NotificationSentService {
 
   private async processNotificationSending(
     notificationSent: NotificationSentEntity,
+    adminUserId: number,
   ): Promise<void> {
     switch (notificationSent.sentType) {
       case NotificationSentType.INDIVIDUAL_USER:
         await this.sendNotificationToUser(
-          notificationSent.notificationId,
           notificationSent.sentToUserId,
+          notificationSent.title,
+          notificationSent.message,
+          notificationSent.image,
+          adminUserId,
         );
         break;
       case NotificationSentType.INDIVIDUAL_RESTAURANT:
         await this.sendNotificationToUser(
-          notificationSent.notificationId,
           notificationSent.sentToUserId,
+          notificationSent.title,
+          notificationSent.message,
+          notificationSent.image,
+          adminUserId,
         );
         break;
       case NotificationSentType.ALL_USERS:
-        await this.sendNotificationToAllUsers(notificationSent.notificationId);
+        await this.sendNotificationToAllUsers(
+          notificationSent.title,
+          notificationSent.message,
+          notificationSent.image,
+          adminUserId,
+        );
         break;
       case NotificationSentType.ALL_RESTAURANTS:
         await this.sendNotificationToAllRestaurants(
-          notificationSent.notificationId,
+          notificationSent.title,
+          notificationSent.message,
+          notificationSent.image,
+          adminUserId,
         );
         break;
       default:
@@ -178,33 +185,56 @@ export class NotificationSentService {
   }
 
   private async sendNotificationToUser(
-    notificationId: number,
     userId: number,
+    title: string,
+    message: string,
+    image: string,
+    adminUserId: number,
   ): Promise<void> {
-    await this.userNotificationsService.create({
-      userId,
-      notificationId,
-      isRead: false,
+    // Create a notification for this specific user
+    const notification = await this.notificationsService.create({
+      title,
+      message,
+      image,
+      userId: adminUserId,
     });
   }
 
   private async sendNotificationToAllUsers(
-    notificationId: number,
+    title: string,
+    message: string,
+    image: string,
+    adminUserId: number,
   ): Promise<void> {
     const users = await this.usersService.findAllUsers();
 
     for (const user of users) {
-      await this.sendNotificationToUser(notificationId, user.id);
+      await this.sendNotificationToUser(
+        user.id,
+        title,
+        message,
+        image,
+        adminUserId,
+      );
     }
   }
 
   private async sendNotificationToAllRestaurants(
-    notificationId: number,
+    title: string,
+    message: string,
+    image: string,
+    adminUserId: number,
   ): Promise<void> {
     const restaurants = await this.usersService.findAllRestaurants();
 
     for (const restaurant of restaurants) {
-      await this.sendNotificationToUser(notificationId, restaurant.id);
+      await this.sendNotificationToUser(
+        restaurant.id,
+        title,
+        message,
+        image,
+        adminUserId,
+      );
     }
   }
 }
