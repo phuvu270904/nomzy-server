@@ -126,4 +126,17 @@ export class UsersService {
     // Filter to only include restaurants (users with owner role)
     return allUsers.filter((user) => user.role === UserRole.OWNER);
   }
+
+  async updateFcmToken(
+    id: number,
+    fcmToken: string,
+  ): Promise<UpdateUserDto | null> {
+    await this.userRepository.update(id, { fcm_token: fcmToken });
+    return this.userRepository.findOne({ where: { id } });
+  }
+
+  async removeFcmToken(id: number): Promise<UpdateUserDto | null> {
+    await this.userRepository.update(id, { fcm_token: undefined });
+    return this.userRepository.findOne({ where: { id } });
+  }
 }

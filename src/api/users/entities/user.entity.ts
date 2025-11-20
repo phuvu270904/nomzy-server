@@ -83,6 +83,11 @@ export class UserEntity {
   @IsBoolean()
   isFullyRegistered: boolean;
 
+  @Column({ type: 'text', nullable: true })
+  @IsOptional()
+  @IsString()
+  fcm_token?: string;
+
   @OneToMany('ProductEntity', 'restaurant', { cascade: true })
   products?: ProductEntity[];
 

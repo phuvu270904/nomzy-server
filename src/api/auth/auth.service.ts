@@ -508,4 +508,46 @@ export class AuthService {
       user: req.user,
     };
   }
+
+  async updateFcmToken(user: any, fcmToken: string) {
+    try {
+      const userMatched = await this.usersService.findOne(user.id);
+
+      if (!userMatched) {
+        throw new NotFoundException('User not found');
+      }
+
+      await this.usersService.updateFcmToken(user.id, fcmToken);
+
+      return {
+        status: 200,
+        message: 'FCM token updated successfully',
+      };
+    } catch (error) {
+      throw new UnauthorizedException(
+        error.message || 'FCM token update failed',
+      );
+    }
+  }
+
+  async removeFcmToken(user: any) {
+    try {
+      const userMatched = await this.usersService.findOne(user.id);
+
+      if (!userMatched) {
+        throw new NotFoundException('User not found');
+      }
+
+      await this.usersService.removeFcmToken(user.id);
+
+      return {
+        status: 200,
+        message: 'FCM token removed successfully',
+      };
+    } catch (error) {
+      throw new UnauthorizedException(
+        error.message || 'FCM token removal failed',
+      );
+    }
+  }
 }
