@@ -4,9 +4,7 @@ import { UsersModule } from './users/users.module';
 import { CategoriesModule } from './categories/categories.module';
 import { ProductsModule } from './products/products.module';
 import { NotificationsModule } from './notifications/notifications.module';
-import { UserNotificationsModule } from './user-notifications/user-notifications.module';
 import { NotificationSentModule } from './notification-sent/notification-sent.module';
-import { UserNotificationSettingsModule } from './user-notification-settings/user-notification-settings.module';
 import { RestaurantsModule } from './restaurants/restaurants.module';
 import { CartsModule } from './carts/carts.module';
 import { AboutModule } from './about/about.module';
@@ -31,9 +29,7 @@ import { AiSuggestModule } from './ai-suggest/ai-suggest.module';
     CategoriesModule,
     ProductsModule,
     NotificationsModule,
-    UserNotificationsModule,
     NotificationSentModule,
-    UserNotificationSettingsModule,
     RestaurantsModule,
     CartsModule,
     AboutModule,
