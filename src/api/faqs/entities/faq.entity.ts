@@ -6,6 +6,11 @@ import {
   UpdateDateColumn,
 } from 'typeorm';
 
+export enum FaqType {
+  USER = 'user',
+  DRIVER = 'driver',
+}
+
 @Entity('faqs')
 export class FaqEntity {
   @PrimaryGeneratedColumn()
@@ -20,8 +25,8 @@ export class FaqEntity {
   @Column({ default: true })
   isActive: boolean;
 
-  @Column({ default: 0 })
-  sortOrder: number;
+  @Column({ type: 'enum', enum: FaqType })
+  type: FaqType;
 
   @CreateDateColumn()
   createdAt: Date;
