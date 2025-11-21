@@ -139,4 +139,23 @@ export class UsersService {
     await this.userRepository.update(id, { fcm_token: undefined });
     return this.userRepository.findOne({ where: { id } });
   }
+
+  async findByRole(role: string): Promise<any[]> {
+    const users = await this.userRepository.find({
+      where: { role: role as UserRole },
+    });
+    
+    return users.map((user) => {
+      const { password, ...result } = user;
+      return result;
+    });
+  }
+
+  async bulkDelete(ids: number[]): Promise<{ deleted: number }> {
+    const result = await this.userRepository.delete({
+      id: In(ids),
+    });
+    
+    return { deleted: result.affected || 0 };
+  }
 }

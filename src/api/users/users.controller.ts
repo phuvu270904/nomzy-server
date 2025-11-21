@@ -6,6 +6,7 @@ import {
   Param,
   Post,
   Put,
+  Query,
 } from '@nestjs/common';
 import { UsersService } from './users.service';
 import { UserEntity } from './entities/user.entity';
@@ -13,7 +14,8 @@ import { CreateUserDto } from './dto/createUser.dto';
 import { UpdateUserDto } from './dto/updateUser.dto';
 import { Roles } from 'src/roles/roles.decorator';
 import { Role } from 'src/roles/role.enum';
-import { ApiBearerAuth } from '@nestjs/swagger';
+import { ApiBearerAuth, ApiQuery } from '@nestjs/swagger';
+import { BulkDeleteUsersDto } from './dto/bulkDeleteUsers.dto';
 
 @ApiBearerAuth('access-token')
 @Controller('users')
@@ -24,6 +26,13 @@ export class UsersController {
   @Get()
   async findAll(): Promise<UserEntity[]> {
     return this.usersService.findAll();
+  }
+
+  @Roles(Role.ADMIN)
+  @Get('by-role')
+  @ApiQuery({ name: 'role', enum: Role, required: true })
+  async findByRole(@Query('role') role: Role): Promise<UserEntity[]> {
+    return this.usersService.findByRole(role);
   }
 
   @Roles(Role.ADMIN)
@@ -53,5 +62,11 @@ export class UsersController {
   @Delete(':id')
   async remove(@Param('id') id: number): Promise<void> {
     return this.usersService.remove(id);
+  }
+
+  @Roles(Role.ADMIN)
+  @Post('bulk-delete')
+  async bulkDelete(@Body() bulkDeleteUsersDto: BulkDeleteUsersDto): Promise<{ deleted: number }> {
+    return this.usersService.bulkDelete(bulkDeleteUsersDto.ids);
   }
 }
