@@ -6,6 +6,7 @@ import {
   IsString,
 } from 'class-validator';
 import { ApiProperty } from '@nestjs/swagger';
+import { FaqType } from '../entities/faq.entity';
 
 export class CreateFaqDto {
   @ApiProperty({
@@ -33,6 +34,15 @@ export class CreateFaqDto {
   @IsOptional()
   @IsBoolean()
   isActive?: boolean;
+
+  @ApiProperty({
+    enum: FaqType,
+    description: 'The type of FAQ (user or driver)',
+    example: FaqType.USER,
+  })
+  @IsNotEmpty()
+  @IsString()
+  type: FaqType;
 
   @ApiProperty({
     description: 'The sort order for the FAQ (lower numbers appear first)',

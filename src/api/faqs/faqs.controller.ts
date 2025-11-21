@@ -36,6 +36,7 @@ export class FaqsController {
   }
 
   @Get()
+  @ApiBearerAuth('access-token')
   @ApiOperation({ summary: 'Get all FAQs' })
   @ApiQuery({
     name: 'activeOnly',
@@ -51,6 +52,7 @@ export class FaqsController {
     );
   }
 
+  @ApiBearerAuth('access-token')
   @Get(':id')
   @ApiOperation({ summary: 'Get a specific FAQ by ID' })
   async findOne(@Param('id') id: number): Promise<FaqEntity> {
