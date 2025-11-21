@@ -30,8 +30,6 @@ export class FaqsService {
       query.where('faq.isActive = :isActive', { isActive: true });
     }
 
-    query.orderBy('faq.sortOrder', 'ASC');
-
     return await query.getMany();
   }
 

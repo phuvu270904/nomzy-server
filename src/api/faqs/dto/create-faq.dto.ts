@@ -43,13 +43,4 @@ export class CreateFaqDto {
   @IsNotEmpty()
   @IsString()
   type: FaqType;
-
-  @ApiProperty({
-    description: 'The sort order for the FAQ (lower numbers appear first)',
-    example: 1,
-    required: false,
-  })
-  @IsOptional()
-  @IsNumber()
-  sortOrder?: number;
 }
