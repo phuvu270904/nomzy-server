@@ -32,7 +32,7 @@ export class EmailService {
     token: string,
     resetUrl?: string,
   ): Promise<void> {
-    const defaultResetUrl = `http://localhost:3000/auth/reset-password?token=${token}`;
+    const defaultResetUrl = `http://${process.env.FRONTEND_HOST}/reset-password?token=${token}`;
     const finalResetUrl = resetUrl || defaultResetUrl;
 
     await this.mailerService.sendMail({
@@ -50,12 +50,6 @@ export class EmailService {
               Reset Password
             </a>
           </div>
-          <p style="font-size: 14px; color: #777;">
-            Or copy and paste this link into your browser:
-          </p>
-          <p style="font-size: 12px; color: #007bff; word-break: break-all;">
-            ${finalResetUrl}
-          </p>
           <p style="font-size: 14px; color: #777; margin-top: 20px;">
             This link will expire in 15 minutes.
           </p>
