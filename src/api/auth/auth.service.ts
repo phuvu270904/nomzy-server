@@ -374,6 +374,7 @@ export class AuthService {
       const dataForAccessToken = {
         id: userMatched.id,
         email: userMatched.email,
+        role: userMatched.role,
       };
 
       const newAccessToken = this.jwtService.sign(dataForAccessToken, {
