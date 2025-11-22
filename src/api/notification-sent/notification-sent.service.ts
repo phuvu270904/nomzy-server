@@ -192,11 +192,11 @@ export class NotificationSentService {
     adminUserId: number,
   ): Promise<void> {
     // Create a notification for this specific user
-    const notification = await this.notificationsService.create({
+    await this.notificationsService.create({
       title,
       message,
       image,
-      userId: adminUserId,
+      userId: userId,
     });
   }
 
@@ -206,7 +206,7 @@ export class NotificationSentService {
     image: string,
     adminUserId: number,
   ): Promise<void> {
-    const users = await this.usersService.findAllUsers();
+    const users = await this.usersService.findAllAccounts();
 
     for (const user of users) {
       await this.sendNotificationToUser(

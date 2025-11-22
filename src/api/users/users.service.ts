@@ -113,6 +113,10 @@ export class UsersService {
     return this.userRepository.findOne({ where: { id } });
   }
 
+  async findAllAccounts(): Promise<UserEntity[]> {
+    return this.userRepository.find();
+  }
+
   async findAllUsers(): Promise<UserEntity[]> {
     const allUsers = await this.userRepository.find();
 
