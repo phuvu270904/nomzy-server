@@ -12,7 +12,7 @@ import {
 import { FaqsService } from './faqs.service';
 import { CreateFaqDto } from './dto/create-faq.dto';
 import { UpdateFaqDto } from './dto/update-faq.dto';
-import { FaqEntity } from './entities/faq.entity';
+import { FaqEntity, FaqType } from './entities/faq.entity';
 import {
   ApiBearerAuth,
   ApiOperation,
@@ -39,16 +39,17 @@ export class FaqsController {
   @ApiBearerAuth('access-token')
   @ApiOperation({ summary: 'Get all FAQs' })
   @ApiQuery({
-    name: 'activeOnly',
+    name: 'type',
     required: false,
-    type: Boolean,
-    description: 'Filter to only active FAQs',
+    type: 'enum',
+    enum: FaqType,
+    description: 'Filter FAQs by type',
   })
   async findAll(
-    @Query('activeOnly') activeOnly?: boolean,
+    @Query('type') type?: FaqType,
   ): Promise<FaqEntity[]> {
     return this.faqsService.findAll(
-      typeof activeOnly === 'string' ? activeOnly === 'true' : !!activeOnly,
+      type
     );
   }
 

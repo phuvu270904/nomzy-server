@@ -1,7 +1,7 @@
 import { Injectable, NotFoundException } from '@nestjs/common';
 import { InjectRepository } from '@nestjs/typeorm';
 import { Repository } from 'typeorm';
-import { FaqEntity } from './entities/faq.entity';
+import { FaqEntity, FaqType } from './entities/faq.entity';
 import { CreateFaqDto } from './dto/create-faq.dto';
 import { UpdateFaqDto } from './dto/update-faq.dto';
 
@@ -23,11 +23,11 @@ export class FaqsService {
   /**
    * Get all FAQs, optionally filtered by active status
    */
-  async findAll(activeOnly = false): Promise<FaqEntity[]> {
+  async findAll(type?: FaqType): Promise<FaqEntity[]> {
     const query = this.faqRepository.createQueryBuilder('faq');
 
-    if (activeOnly) {
-      query.where('faq.isActive = :isActive', { isActive: true });
+    if (type) {
+      query.where('faq.type = :type', { type });
     }
 
     return await query.getMany();
