@@ -12,6 +12,8 @@ import {
 import { FaqsService } from './faqs.service';
 import { CreateFaqDto } from './dto/create-faq.dto';
 import { UpdateFaqDto } from './dto/update-faq.dto';
+import { SubmitQuestionDto } from './dto/submit-question.dto';
+import { AnswerQuestionDto } from './dto/answer-question.dto';
 import { FaqEntity, FaqType } from './entities/faq.entity';
 import {
   ApiBearerAuth,
@@ -30,9 +32,27 @@ export class FaqsController {
   @Post()
   @ApiBearerAuth('access-token')
   @Roles(Role.ADMIN)
-  @ApiOperation({ summary: 'Create a new FAQ' })
+  @ApiOperation({ summary: 'Create a new FAQ (Admin - status will be replied)' })
   async create(@Body() createFaqDto: CreateFaqDto): Promise<FaqEntity> {
     return this.faqsService.create(createFaqDto);
+  }
+
+  @Post('submit-question')
+  @ApiBearerAuth('access-token')
+  @ApiOperation({ summary: 'Submit a question (Public - status will be pending)' })
+  async submitQuestion(@Body() submitQuestionDto: SubmitQuestionDto): Promise<FaqEntity> {
+    return this.faqsService.submitQuestion(submitQuestionDto);
+  }
+
+  @Patch(':id/answer')
+  @ApiBearerAuth('access-token')
+  @Roles(Role.ADMIN)
+  @ApiOperation({ summary: 'Answer a question (Admin - update status to replied)' })
+  async answerQuestion(
+    @Param('id') id: number,
+    @Body() answerQuestionDto: AnswerQuestionDto,
+  ): Promise<FaqEntity> {
+    return this.faqsService.answerQuestion(id, answerQuestionDto);
   }
 
   @Get()

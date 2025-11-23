@@ -1,9 +1,11 @@
 import { Injectable, NotFoundException } from '@nestjs/common';
 import { InjectRepository } from '@nestjs/typeorm';
 import { Repository } from 'typeorm';
-import { FaqEntity, FaqType } from './entities/faq.entity';
+import { FaqEntity, FaqStatus, FaqType } from './entities/faq.entity';
 import { CreateFaqDto } from './dto/create-faq.dto';
 import { UpdateFaqDto } from './dto/update-faq.dto';
+import { SubmitQuestionDto } from './dto/submit-question.dto';
+import { AnswerQuestionDto } from './dto/answer-question.dto';
 
 @Injectable()
 export class FaqsService {
@@ -13,11 +15,41 @@ export class FaqsService {
   ) {}
 
   /**
-   * Create a new FAQ
+   * Create a new FAQ (by admin - status will be replied)
    */
   async create(createFaqDto: CreateFaqDto): Promise<FaqEntity> {
-    const newFaq = this.faqRepository.create(createFaqDto);
+    const newFaq = this.faqRepository.create({
+      ...createFaqDto,
+      status: FaqStatus.REPLIED,
+      repliedAt: new Date(),
+    });
     return await this.faqRepository.save(newFaq);
+  }
+
+  /**
+   * Submit a question (public - status will be pending)
+   */
+  async submitQuestion(submitQuestionDto: SubmitQuestionDto): Promise<FaqEntity> {
+    const newQuestion = this.faqRepository.create({
+      question: submitQuestionDto.question,
+      type: submitQuestionDto.type,
+      status: FaqStatus.PENDING,
+      isActive: true,
+    });
+    return await this.faqRepository.save(newQuestion);
+  }
+
+  /**
+   * Answer a question (by admin - update status to replied)
+   */
+  async answerQuestion(id: number, answerQuestionDto: AnswerQuestionDto): Promise<FaqEntity> {
+    const faq = await this.findOne(id);
+
+    faq.answer = answerQuestionDto.answer;
+    faq.status = FaqStatus.REPLIED;
+    faq.repliedAt = new Date();
+
+    return await this.faqRepository.save(faq);
   }
 
   /**

@@ -11,6 +11,11 @@ export enum FaqType {
   DRIVER = 'driver',
 }
 
+export enum FaqStatus {
+  PENDING = 'pending',
+  REPLIED = 'replied',
+}
+
 @Entity('faqs')
 export class FaqEntity {
   @PrimaryGeneratedColumn()
@@ -19,7 +24,7 @@ export class FaqEntity {
   @Column({ type: 'varchar', length: 255 })
   question: string;
 
-  @Column({ type: 'text' })
+  @Column({ type: 'text', nullable: true })
   answer: string;
 
   @Column({ default: true })
@@ -27,6 +32,12 @@ export class FaqEntity {
 
   @Column({ type: 'enum', enum: FaqType })
   type: FaqType;
+
+  @Column({ type: 'enum', enum: FaqStatus, default: FaqStatus.PENDING })
+  status: FaqStatus;
+
+  @Column({ type: 'timestamp', nullable: true })
+  repliedAt: Date;
 
   @CreateDateColumn()
   createdAt: Date;
