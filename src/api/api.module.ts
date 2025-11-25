@@ -7,7 +7,6 @@ import { NotificationsModule } from './notifications/notifications.module';
 import { NotificationSentModule } from './notification-sent/notification-sent.module';
 import { RestaurantsModule } from './restaurants/restaurants.module';
 import { CartsModule } from './carts/carts.module';
-import { AboutModule } from './about/about.module';
 import { FeedbacksModule } from './feedbacks/feedbacks.module';
 import { AddressesModule } from './addresses/addresses.module';
 import { CouponsModule } from './coupons/coupons.module';
@@ -32,7 +31,6 @@ import { AiSuggestModule } from './ai-suggest/ai-suggest.module';
     NotificationSentModule,
     RestaurantsModule,
     CartsModule,
-    AboutModule,
     FeedbacksModule,
     AddressesModule,
     CouponsModule,
