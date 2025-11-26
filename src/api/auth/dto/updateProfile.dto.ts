@@ -27,7 +27,6 @@ export class UpdateProfileDto {
     description: 'The phone number of the user',
     required: false,
   })
-  @IsPhoneNumber()
   @IsOptional()
   phone_number?: string;
 
