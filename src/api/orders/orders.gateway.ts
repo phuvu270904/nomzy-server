@@ -167,6 +167,7 @@ export class OrdersGateway implements OnGatewayConnection, OnGatewayDisconnect {
       this.declinedDrivers.delete(data.orderId);
 
       // Notify all parties in the order room
+      // The order object already contains enriched driver data from assignDriverToOrder
       this.server.to(roomName).emit('driver-assigned', {
         orderId: data.orderId,
         driverId: client.user.id,

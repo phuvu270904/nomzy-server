@@ -13,6 +13,8 @@ import { UserEntity, UserRole } from '../users/entities/user.entity';
 import { CreateOrderDto } from './dto/create-order.dto';
 import { OrderType } from './dto/order-type.dto';
 import { OrdersGateway } from './orders.gateway';
+import { DriverReviewEntity } from '../driver-reviews/entities/driver-review.entity';
+import { UserVehicleEntity } from '../user-vehicles/entities/user-vehicle.entity';
 
 @Injectable()
 export class OrdersService {
@@ -25,6 +27,10 @@ export class OrdersService {
     private readonly orderItemRepository: Repository<OrderItemEntity>,
     @InjectRepository(UserEntity)
     private readonly userRepository: Repository<UserEntity>,
+    @InjectRepository(DriverReviewEntity)
+    private readonly driverReviewRepository: Repository<DriverReviewEntity>,
+    @InjectRepository(UserVehicleEntity)
+    private readonly userVehicleRepository: Repository<UserVehicleEntity>,
   ) {}
 
   async createOrder(createOrderDto: CreateOrderDto): Promise<OrderEntity> {
@@ -80,7 +86,7 @@ export class OrdersService {
   }
 
   async findOrderById(orderId: number): Promise<OrderEntity | null> {
-    return this.orderRepository.findOne({
+    const order = await this.orderRepository.findOne({
       where: { id: orderId },
       relations: [
         'user',
@@ -92,6 +98,12 @@ export class OrdersService {
         'address',
       ],
     });
+
+    if (order && order.driver) {
+      order.driver = await this.enrichDriverData(order.driver);
+    }
+
+    return order;
   }
 
   async updateOrderStatus(
@@ -154,21 +166,28 @@ export class OrdersService {
     order.driverId = driverId;
     order.status = OrderStatus.PREPARING;
 
-    const roomName = `order_${orderId}`;
-    this.ordersGateway.server.to(roomName).emit('order-status-updated', {
-      orderId,
-      status: order.status,
-      updatedBy: 'system',
-      updatedAt: new Date(),
-      order,
-    });
-
-
     const updatedOrder = await this.orderRepository.save(order);
     const orderWithRelations = await this.findOrderById(updatedOrder.id);
     if (!orderWithRelations) {
       throw new NotFoundException('Failed to assign driver');
     }
+
+    // Enrich driver data with rating and plate number
+    if (orderWithRelations.driver) {
+      orderWithRelations.driver = await this.enrichDriverData(
+        orderWithRelations.driver,
+      );
+    }
+
+    const roomName = `order_${orderId}`;
+    this.ordersGateway.server.to(roomName).emit('order-status-updated', {
+      orderId,
+      status: orderWithRelations.status,
+      updatedBy: 'system',
+      updatedAt: new Date(),
+      order: orderWithRelations,
+    });
+
     return orderWithRelations;
   }
 
@@ -228,7 +247,7 @@ export class OrdersService {
   }
 
   async getOrdersByRestaurant(restaurantId: number): Promise<OrderEntity[]> {
-    return this.orderRepository.find({
+    const orders = await this.orderRepository.find({
       where: { restaurantId },
       relations: [
         'user',
@@ -240,10 +259,19 @@ export class OrdersService {
       ],
       order: { createdAt: 'DESC' },
     });
+
+    // Enrich driver data for all orders
+    for (const order of orders) {
+      if (order.driver) {
+        order.driver = await this.enrichDriverData(order.driver);
+      }
+    }
+
+    return orders;
   }
 
   async getOrdersByUser(userId: number): Promise<OrderEntity[]> {
-    return this.orderRepository.find({
+    const orders = await this.orderRepository.find({
       where: { userId },
       relations: [
         'restaurant',
@@ -254,10 +282,19 @@ export class OrdersService {
       ],
       order: { createdAt: 'DESC' },
     });
+
+    // Enrich driver data for all orders
+    for (const order of orders) {
+      if (order.driver) {
+        order.driver = await this.enrichDriverData(order.driver);
+      }
+    }
+
+    return orders;
   }
 
   async getOrdersByDriver(driverId: number): Promise<OrderEntity[]> {
-    return this.orderRepository.find({
+    const orders = await this.orderRepository.find({
       where: { driverId },
       relations: [
         'user',
@@ -268,6 +305,15 @@ export class OrdersService {
       ],
       order: { createdAt: 'DESC' },
     });
+
+    // Enrich driver data for all orders
+    for (const order of orders) {
+      if (order.driver) {
+        order.driver = await this.enrichDriverData(order.driver);
+      }
+    }
+
+    return orders;
   }
 
   async getOrdersByUserAndType(
@@ -276,7 +322,7 @@ export class OrdersService {
   ): Promise<OrderEntity[]> {
     const statusMap = this.getStatusesByType(type);
 
-    return this.orderRepository.find({
+    const orders = await this.orderRepository.find({
       where: {
         userId,
         status: In(statusMap),
@@ -290,6 +336,15 @@ export class OrdersService {
       ],
       order: { createdAt: 'DESC' },
     });
+
+    // Enrich driver data for all orders
+    for (const order of orders) {
+      if (order.driver) {
+        order.driver = await this.enrichDriverData(order.driver);
+      }
+    }
+
+    return orders;
   }
 
   async getOrdersByRestaurantAndType(
@@ -298,7 +353,7 @@ export class OrdersService {
   ): Promise<OrderEntity[]> {
     const statusMap = this.getStatusesByType(type);
 
-    return this.orderRepository.find({
+    const orders = await this.orderRepository.find({
       where: {
         restaurantId,
         status: In(statusMap),
@@ -312,6 +367,15 @@ export class OrdersService {
       ],
       order: { createdAt: 'DESC' },
     });
+
+    // Enrich driver data for all orders
+    for (const order of orders) {
+      if (order.driver) {
+        order.driver = await this.enrichDriverData(order.driver);
+      }
+    }
+
+    return orders;
   }
 
   async getOrdersByDriverAndType(
@@ -320,7 +384,7 @@ export class OrdersService {
   ): Promise<OrderEntity[]> {
     const statusMap = this.getStatusesByType(type);
 
-    return this.orderRepository.find({
+    const orders = await this.orderRepository.find({
       where: {
         driverId,
         status: In(statusMap),
@@ -334,6 +398,15 @@ export class OrdersService {
       ],
       order: { createdAt: 'DESC' },
     });
+
+    // Enrich driver data for all orders
+    for (const order of orders) {
+      if (order.driver) {
+        order.driver = await this.enrichDriverData(order.driver);
+      }
+    }
+
+    return orders;
   }
 
   private getStatusesByType(type: OrderType): OrderStatus[] {
@@ -379,5 +452,32 @@ export class OrdersService {
     };
 
     return validTransitions[currentStatus]?.includes(newStatus) || false;
+  }
+
+  private async enrichDriverData(driver: UserEntity): Promise<any> {
+    if (!driver) return null;
+
+    // Calculate average rating
+    const reviews = await this.driverReviewRepository.find({
+      where: { driverId: driver.id },
+    });
+
+    const averageRating =
+      reviews.length > 0
+        ? reviews.reduce((sum, review) => sum + review.rating, 0) /
+          reviews.length
+        : 0;
+
+    // Get plate number from user vehicle
+    const vehicle = await this.userVehicleRepository.findOne({
+      where: { userId: driver.id },
+      order: { createdAt: 'DESC' }, // Get the most recent vehicle
+    });
+
+    return {
+      ...driver,
+      rating: parseFloat(averageRating.toFixed(2)),
+      plateNumber: vehicle?.regNumber || null,
+    };
   }
 }
