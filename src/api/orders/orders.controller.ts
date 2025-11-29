@@ -25,6 +25,8 @@ import {
   ApiOperation,
   ApiResponse,
   ApiQuery,
+  ApiParam,
+  ApiBody,
 } from '@nestjs/swagger';
 
 @Controller('orders')
@@ -36,6 +38,28 @@ export class OrdersController {
     private readonly ordersGateway: OrdersGateway,
   ) {}
 
+  @ApiOperation({
+    summary: 'Create new order',
+    description: 'Create a new order with order items, delivery address, and payment method. The order is automatically confirmed and driver search begins after 5 seconds. If no driver is found within 30 minutes, the order is automatically cancelled.'
+  })
+  @ApiBody({ type: CreateOrderDto })
+  @ApiResponse({
+    status: 201,
+    description: 'Order created and confirmed successfully. WebSocket notifications sent to restaurant and order room.',
+    type: OrderEntity,
+  })
+  @ApiResponse({
+    status: 400,
+    description: 'Bad Request - Invalid order data, items, or addresses'
+  })
+  @ApiResponse({
+    status: 404,
+    description: 'User, restaurant, address, or products not found'
+  })
+  @ApiResponse({
+    status: 401,
+    description: 'Unauthorized - Invalid or missing token'
+  })
   @Post()
   async create(@Body() createOrderDto: CreateOrderDto): Promise<OrderEntity> {
     // Create the order
@@ -76,6 +100,29 @@ export class OrdersController {
     return confirmedOrder;
   }
 
+  @ApiOperation({
+    summary: 'Get orders by restaurant ID',
+    description: 'Retrieve all orders for a specific restaurant by restaurant ID. Includes order items, customer details, and delivery information.'
+  })
+  @ApiParam({
+    name: 'restaurantId',
+    type: 'number',
+    description: 'Restaurant ID',
+    example: 1
+  })
+  @ApiResponse({
+    status: 200,
+    description: 'List of restaurant orders retrieved successfully',
+    type: [OrderEntity],
+  })
+  @ApiResponse({
+    status: 404,
+    description: 'Restaurant not found'
+  })
+  @ApiResponse({
+    status: 401,
+    description: 'Unauthorized - Invalid or missing token'
+  })
   @Get('restaurant/:restaurantId')
   async getRestaurantOrders(
     @Param('restaurantId', ParseIntPipe) restaurantId: number,
@@ -83,6 +130,29 @@ export class OrdersController {
     return this.ordersService.getOrdersByRestaurant(restaurantId);
   }
 
+  @ApiOperation({
+    summary: 'Get orders by user ID',
+    description: 'Retrieve all orders placed by a specific user by user ID. Includes order history with all statuses.'
+  })
+  @ApiParam({
+    name: 'userId',
+    type: 'number',
+    description: 'User ID',
+    example: 5
+  })
+  @ApiResponse({
+    status: 200,
+    description: 'List of user orders retrieved successfully',
+    type: [OrderEntity],
+  })
+  @ApiResponse({
+    status: 404,
+    description: 'User not found'
+  })
+  @ApiResponse({
+    status: 401,
+    description: 'Unauthorized - Invalid or missing token'
+  })
   @Get('user/:userId')
   async getUserOrders(
     @Param('userId', ParseIntPipe) userId: number,
@@ -90,6 +160,29 @@ export class OrdersController {
     return this.ordersService.getOrdersByUser(userId);
   }
 
+  @ApiOperation({
+    summary: 'Get orders by driver ID',
+    description: 'Retrieve all orders assigned to a specific driver by driver ID. Includes both completed and active deliveries.'
+  })
+  @ApiParam({
+    name: 'driverId',
+    type: 'number',
+    description: 'Driver ID',
+    example: 3
+  })
+  @ApiResponse({
+    status: 200,
+    description: 'List of driver orders retrieved successfully',
+    type: [OrderEntity],
+  })
+  @ApiResponse({
+    status: 404,
+    description: 'Driver not found'
+  })
+  @ApiResponse({
+    status: 401,
+    description: 'Unauthorized - Invalid or missing token'
+  })
   @Get('driver/:driverId')
   async getDriverOrders(
     @Param('driverId', ParseIntPipe) driverId: number,
@@ -97,6 +190,29 @@ export class OrdersController {
     return this.ordersService.getOrdersByDriver(driverId);
   }
 
+  @ApiOperation({
+    summary: 'Get order by ID',
+    description: 'Retrieve detailed information about a specific order by its ID. Includes order items, customer, restaurant, driver, and delivery details.'
+  })
+  @ApiParam({
+    name: 'id',
+    type: 'number',
+    description: 'Order ID',
+    example: 123
+  })
+  @ApiResponse({
+    status: 200,
+    description: 'Order found and retrieved successfully',
+    type: OrderEntity,
+  })
+  @ApiResponse({
+    status: 404,
+    description: 'Order not found'
+  })
+  @ApiResponse({
+    status: 401,
+    description: 'Unauthorized - Invalid or missing token'
+  })
   @Get(':id')
   async findOne(@Param('id', ParseIntPipe) id: number): Promise<OrderEntity> {
     const order = await this.ordersService.findOrderById(id);
@@ -106,6 +222,34 @@ export class OrdersController {
     return order;
   }
 
+  @ApiOperation({
+    summary: 'Update order status',
+    description: 'Update the status of an order. Status flow: pending → confirmed → preparing → ready_for_pickup → out_for_delivery → delivered. Can also be cancelled at any stage. WebSocket notifications are sent on status updates.'
+  })
+  @ApiParam({
+    name: 'id',
+    type: 'number',
+    description: 'Order ID to update',
+    example: 123
+  })
+  @ApiBody({ type: UpdateOrderStatusDto })
+  @ApiResponse({
+    status: 200,
+    description: 'Order status updated successfully',
+    type: OrderEntity,
+  })
+  @ApiResponse({
+    status: 400,
+    description: 'Bad Request - Invalid status transition'
+  })
+  @ApiResponse({
+    status: 404,
+    description: 'Order not found'
+  })
+  @ApiResponse({
+    status: 401,
+    description: 'Unauthorized - Invalid or missing token'
+  })
   @Patch(':id/status')
   async updateStatus(
     @Param('id', ParseIntPipe) id: number,
