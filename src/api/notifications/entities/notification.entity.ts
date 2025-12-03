@@ -18,7 +18,7 @@ export class NotificationEntity {
   @Column()
   userId: number;
 
-  @ManyToOne(() => UserEntity)
+  @ManyToOne(() => UserEntity, { onDelete: 'CASCADE' })
   user: UserEntity;
 
   @Column({ default: false })
